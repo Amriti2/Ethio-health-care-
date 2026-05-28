@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Login - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/apply">Apply</a>
+        </div>
+    </nav>
+
+    <main class="login-page">
+        <section class="login-panel">
+            <div class="login-card">
+                <span class="eyebrow">Secure Access</span>
+                <h1>CEO Dashboard</h1>
+                <p>Review applications, manage candidates, and grow your healthcare team. Enter your secure password below.</p>
+                {% if error %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
+                <form method="post">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" placeholder="Enter CEO password" required>
+                    <button type="submit" class="primary-btn">Access Dashboard</button>
+                </form>
+                <p class="login-hint">This secure page is hidden from the main navigation to keep CEO access private.</p>
+            </div>
+            <div class="login-graphic">
+                <h2>Manage Your Team</h2>
+                <p>Access your exclusive CEO dashboard to review all applications, verify candidates, assign email accounts, and communicate directly with applicants.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

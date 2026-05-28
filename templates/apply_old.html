@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Portal — Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/apply">Apply</a>
+            <a href="/login">CEO Login</a>
+        </div>
+    </nav>
+
+    <main class="apply-page">
+        <section class="apply-hero">
+            <div class="hero-copy">
+                <span class="eyebrow">Join Our Team</span>
+                <h1>Submit Your Healthcare Application Today</h1>
+                <p>Your application reaches our CEO personally. Fill out all fields accurately, upload your PDF CV, and tell us about your experience. We review every submission carefully.</p>
+                <div class="hero-cards">
+                    <article>
+                        <strong>📋 Complete & Honest</strong>
+                        <p>Every detail helps us understand your qualifications.</p>
+                    </article>
+                    <article>
+                        <strong>📄 PDF CV</strong>
+                        <p>Upload a professional CV for quick review.</p>
+                    </article>
+                    <article>
+                        <strong>✍️ Your Story</strong>
+                        <p>Tell us why you're perfect for Ethio Health Care.</p>
+                    </article>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-card">
+                    <span class="badge">About You • Up to 500 words</span>
+                    <h2>Make Your Application Personal</h2>
+                    <p>Share your passion for healthcare, your achievements, and what makes you unique. Our team loves reading authentic stories from talented professionals.</p>
+                </div>
+            </div>
+        </section>
+
+                    <label>
+                        <span>Phone</span>
+                        <input type="tel" name="phone" placeholder="0908004488" required>
+                    </label>
+
+                    <label>
+                        <span>Role</span>
+                        <select name="role" required>
+                            <option value="">Select role</option>
+                            <option value="Nurse" {% if role == 'Nurse' %}selected{% endif %}>Nurse</option>
+                            <option value="Doctor" {% if role == 'Doctor' %}selected{% endif %}>Doctor</option>
+                            <option value="Care Giver" {% if role == 'Care Giver' %}selected{% endif %}>Care Giver</option>
+                            <option value="Midwife" {% if role == 'Midwife' %}selected{% endif %}>Midwife</option>
+                            <option value="Other" {% if role == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </label>
+
+                    <label class="full-width">
+                        <span>Experience</span>
+                        <input type="text" name="experience" placeholder="e.g. 3 years of nursing, wound care, patient support" required>
+                    </label>
+
+                    <label class="full-width">
+                        <span>Your Qualifications</span>
+                        <textarea name="about" placeholder="Tell us about your healthcare experience and why you're a great fit." maxlength="5000"></textarea>
+                        <div class="small-note">Write about your experience in roughly 500 words.</div>
+                    </label>
+
+                    <label class="full-width file-upload">
+                        <span>Upload CV (PDF)</span>
+                        <input type="file" name="cv" accept="application/pdf" required>
+                        <p class="hint">PDF only. Max 5MB.</p>
+                    </label>
+
+                    <label class="full-width">
+                        <span>Short Message</span>
+                        <textarea name="message" placeholder="A quick intro, availability, or what makes you stand out."></textarea>
+                    </label>
+                </div>
+
+                <button type="submit" class="primary-btn">Submit Application</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

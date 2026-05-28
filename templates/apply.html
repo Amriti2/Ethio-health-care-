@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Portal — Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .apply-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .apply-hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 3rem;
+            align-items: center;
+            padding: 5rem 4rem;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .hero-copy {
+            max-width: 600px;
+        }
+
+        .hero-copy h1 {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
+        }
+
+        .hero-copy p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .hero-cards article {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 2px solid rgba(16, 185, 129, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .hero-cards article:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.15);
+        }
+
+        .hero-cards strong {
+            display: block;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-cards p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .hero-visual {
+            display: grid;
+            align-items: center;
+            justify-content: center;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        .visual-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .visual-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(16, 185, 129, 0.2);
+            border-color: var(--primary-green);
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--secondary-teal) 0%, #0891b2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(249, 115, 22, 0.3);
+        }
+
+        .visual-card h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+            font-weight: 900;
+        }
+
+        .visual-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .application-panel {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 3rem;
+            padding: 3rem 4rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: slideUp 0.8s ease-out 0.3s both;
+        }
+
+        .panel-left {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .panel-right {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(16, 185, 129, 0.15);
+            border-radius: 2rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(14, 116, 144, 0.1);
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            transition: all 0.3s ease;
+        }
+
+        .panel-right:hover {
+            border-color: var(--primary-green);
+            box-shadow: 0 30px 80px rgba(14, 116, 144, 0.15);
+        }
+
+        .panel-right h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            font-weight: 900;
+        }
+
+        .full-width {
+            grid-column: 1 / -1 !important;
+        }
+
+        .form-section-title {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        form {
+            display: grid;
+            gap: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid input,
+        .form-grid select,
+        .form-grid textarea {
+            padding: 1rem;
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.95rem;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            font-weight: 500;
+        }
+
+        .form-grid input:focus,
+        .form-grid select:focus,
+        .form-grid textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .form-grid textarea {
+            resize: vertical;
+            min-height: 140px;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .form-grid label span {
+            display: block;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.6rem;
+            font-size: 0.95rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .file-upload {
+            display: block;
+            position: relative;
+            grid-column: 1 / -1;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border: 2px dashed var(--primary-green);
+            border-radius: 0.95rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover .file-upload-area {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border-color: var(--primary-blue);
+            transform: scale(1.02);
+        }
+
+        .file-upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload-text {
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .file-upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .small-note {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .form-actions {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+            grid-column: 1 / -1;
+        }
+
+        .form-actions button {
+            width: 100%;
+            padding: 1.3rem;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border-radius: 1rem;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .form-actions button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .message-box {
+            grid-column: 1 / -1;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .message-box.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            color: #166534;
+        }
+
+        .message-box.error {
+            background: rgba(255, 107, 107, 0.15);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            color: #991b1b;
+        }
+
+        @media (max-width: 1024px) {
+            .apply-hero,
+            .application-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .application-panel {
+                padding: 2rem;
+            }
+
+            .panel-right {
+                position: static;
+                margin-top: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .apply-hero {
+                padding: 3rem 1.5rem;
+            }
+
+            .apply-hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/apply">Apply</a>
+            <a href="/login">CEO Login</a>
+        </div>
+    </nav>
+
+    <main class="apply-page">
+        <section class="apply-hero">
+            <div class="hero-copy">
+                <span class="eyebrow">📝 Submit Your Application</span>
+                <h1>Join Ethio Health Care's Elite Professional Network</h1>
+                <p>This is your opportunity to showcase your expertise and passion for healthcare. Provide complete and honest information about your qualifications. Our CEO and senior leadership team personally reviews every submission and will reach out directly to qualified candidates.</p>
+                <div class="hero-cards">
+                    <article>
+                        <strong>📋 Comprehensive</strong>
+                        <p>Share every detail about your experience and qualifications.</p>
+                    </article>
+                    <article>
+                        <strong>📄 Professional CV</strong>
+                        <p>Upload your polished PDF for thorough review.</p>
+                    </article>
+                    <article>
+                        <strong>✍️ Your Story</strong>
+                        <p>Tell us your professional journey and vision.</p>
+                    </article>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-card">
+                    <span class="badge">💼 Professional Opportunity</span>
+                    <h2>Make an Impression</h2>
+                    <p>Complete this form with professionalism and attention to detail. Your application is a reflection of your commitment to excellence in healthcare.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="application-panel">
+            <div class="panel-left">
+                <div class="info-block">
+                    <h2>Why Choose Ethio Health Care?</h2>
+                    <p>We are a trusted healthcare organization dedicated to connecting exceptional professionals with families who need compassionate, quality care.</p>
+                    <ul>
+                        <li>Direct leadership engagement with our CEO</li>
+                        <li>Competitive compensation and benefits</li>
+                        <li>Professional development opportunities</li>
+                        <li>Work with a dedicated, passionate team</li>
+                        <li>Flexible scheduling options</li>
+                        <li>Secure, supportive work environment</li>
+                    </ul>
+                </div>
+
+                {% if success %}
+                <div class="message-box success">
+                    ✓ {{ success }}
+                </div>
+                {% endif %}
+                {% if error %}
+                <div class="message-box error">
+                    ✗ {{ error }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="panel-right">
+                <h2>{{ role or 'Your' }} Application</h2>
+                <form method="POST" enctype="multipart/form-data" class="form-grid">
+                    {% if error %}
+                    <div class="message-box error" style="grid-column: 1 / -1;">
+                        ✗ {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if success %}
+                    <div class="message-box success" style="grid-column: 1 / -1;">
+                        ✓ {{ success }}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-section-title">Personal Information</div>
+
+                    <label>
+                        <span>Full Name</span>
+                        <input type="text" name="name" placeholder="e.g. Jane Doe" required>
+                    </label>
+
+                    <label>
+                        <span>Email Address</span>
+                        <input type="email" name="email" placeholder="jane@example.com" required>
+                    </label>
+
+                    <label>
+                        <span>Phone Number</span>
+                        <input type="tel" name="phone" placeholder="0908004488" required>
+                    </label>
+
+                    <label>
+                        <span>Healthcare Role</span>
+                        <select name="role" required>
+                            <option value="">Select your specialty</option>
+                            <option value="Nurse" {% if role == 'Nurse' %}selected{% endif %}>Nurse</option>
+                            <option value="Doctor" {% if role == 'Doctor' %}selected{% endif %}>Doctor</option>
+                            <option value="Care Giver" {% if role == 'Care Giver' %}selected{% endif %}>Care Giver</option>
+                            <option value="Midwife" {% if role == 'Midwife' %}selected{% endif %}>Midwife</option>
+                            <option value="Other" {% if role == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </label>
+
+                    <div class="form-section-title">Professional Experience</div>
+
+                    <label class="full-width">
+                        <span>Years of Experience & Specialization</span>
+                        <input type="text" name="experience" placeholder="e.g., 5 years in critical care nursing, wound management, ICU experience" required>
+                    </label>
+
+                    <label class="full-width">
+                        <span>Professional Background & Achievements</span>
+                        <textarea name="about" placeholder="Describe your professional journey, key achievements, certifications, specialized training, and what makes you exceptional in your field. Share your passion for healthcare and patient care (500 words recommended)." maxlength="5000" required></textarea>
+                        <div class="small-note">Share your professional story. 500 words recommended.</div>
+                    </label>
+
+                    <div class="form-section-title">Qualifications & Preferences</div>
+
+                    <label>
+                        <span>Professional Qualifications/Certifications</span>
+                        <input type="text" name="qualifications" placeholder="e.g., RN License, ACLS, BLS, Advanced Nursing Diploma" required>
+                    </label>
+
+                    <label>
+                        <span>Years of Work Experience</span>
+                        <select name="experience_years" required>
+                            <option value="">Select your experience level</option>
+                            <option value="1 year">1 Year</option>
+                            <option value="2 years">2 Years</option>
+                            <option value="3+ years">3+ Years</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Shift Preference</span>
+                        <select name="shift_preference" required>
+                            <option value="">Select your preferred shift</option>
+                            <option value="Morning Shift">Morning Shift</option>
+                            <option value="Night Shift">Night Shift</option>
+                            <option value="Both">Both (Flexible)</option>
+                        </select>
+                    </label>
+
+                    <div class="form-section-title">CV & Additional Information</div>
+
+                    <label class="file-upload full-width">
+                        <div class="file-upload-area">
+                            <div class="file-upload-icon">📄</div>
+                            <div class="file-upload-text">Upload Your Professional CV</div>
+                            <div class="file-upload-hint">PDF only. Maximum 5MB.</div>
+                        </div>
+                        <input type="file" name="cv" accept="application/pdf" required>
+                    </label>
+
+                    <label class="full-width">
+                        <span>Additional Message or Cover Letter</span>
+                        <textarea name="message" placeholder="Share what excites you about this opportunity, your availability, or anything else you'd like our team to know about you."></textarea>
+                        <div class="small-note">Optional. Tell us why you're interested in joining Ethio Health Care.</div>
+                    </label>
+
+                    <div class="form-actions">
+                        <button type="submit">✓ Submit Application</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('.file-upload input[type="file"]');
+            const labelText = document.querySelector('.file-upload-text');
+            if (fileInput && labelText) {
+                fileInput.addEventListener('change', function() {
+                    if (fileInput.files.length) {
+                        labelText.textContent = fileInput.files[0].name;
+                    } else {
+                        labelText.textContent = 'Upload Your Professional CV';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

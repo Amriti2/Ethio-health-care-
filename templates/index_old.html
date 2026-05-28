@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethio Health Care - Healthcare Careers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#why">Why Apply</a>
+            <a href="#steps">How It Works</a>
+            <a href="/apply">Apply Now</a>
+        </div>
+    </nav>
+
+    <header class="landing-hero" id="home">
+        <div class="landing-copy">
+            <span class="eyebrow">Join Our Team</span>
+            <h1>Build Your Healthcare Career with Ethio Health Care</h1>
+            <p>We're hiring talented nurses, doctors, midwives, and care givers. Apply with a polished application that showcases your skills and experience. Our hiring team reviews every application personally.</p>
+            <div class="hero-buttons">
+                <a href="/apply" class="primary-btn">Start Your Application</a>
+                <a href="#why" class="secondary-btn">Learn More</a>
+            </div>
+        </div>
+        <div class="landing-visual">
+            <div class="poster-card">
+                <span class="badge">Application Guide</span>
+                <img src="{{ url_for('static', filename='css/images/poster.png') }}" alt="Ethio Health Care Recruitment Poster">
+                <div class="poster-copy">
+                    <h2>Your Path to Success</h2>
+                    <p>Follow the simple three-step process on our poster to submit an impressive application that gets noticed.</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="feature-strip" id="why">
+        <div class="feature-card">
+            <strong>⚡ Fast Review</strong>
+            <p>Your application reaches our CEO and hiring team immediately. We value your time and respond quickly.</p>
+        </div>
+        <div class="feature-card">
+            <strong>✓ One Simple Form</strong>
+            <p>Tell us about yourself, upload your CV, and share your story in one streamlined application.</p>
+        </div>
+        <div class="feature-card">
+            <strong>💚 Trusted Care</strong>
+            <p>We connect passionate healthcare professionals with families who need dependable, compassionate support.</p>
+        </div>
+    </section>
+
+    <section class="steps-panel" id="steps">
+        <div>
+            <h2>How to Apply in 3 Easy Steps</h2>
+            <p>Join thousands of healthcare professionals who trust Ethio Health Care. Complete your application today.</p>
+        </div>
+        <div class="steps-grid">
+            <article>
+                <span class="step-number">1</span>
+                <h3>Enter Your Information</h3>
+                <p>Start with your full name, email, phone number, and choose your healthcare role. We keep everything secure.</p>
+            </article>
+            <article>
+                <span class="step-number">2</span>
+                <h3>Tell Your Story</h3>
+                <p>Highlight your experience, achievements, and passion for healthcare. Write about what makes you unique.</p>
+            </article>
+            <article>
+                <span class="step-number">3</span>
+                <h3>Submit Your CV</h3>
+                <p>Upload your PDF CV so our team can review your qualifications. We'll evaluate everything carefully.</p>
+            </article>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <p>© 2026 Ethio Health Care. Join our community of healthcare professionals making a difference. Apply now!</p>
+    </footer>
+</body>
+</html>

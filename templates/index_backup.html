@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethio Health Care - Professional Healthcare Careers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .landing-hero {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(6, 182, 212, 0.05) 0%, rgba(249, 115, 22, 0.02) 100%);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .landing-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .landing-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -30%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .landing-copy {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .landing-copy h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border-radius: 1rem;
+            font-weight: 700;
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.25);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 60px rgba(16, 185, 129, 0.35);
+        }
+
+        .secondary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.1rem 2rem;
+            background: rgba(249, 115, 22, 0.1);
+            border: 2px solid var(--primary-coral);
+            color: var(--primary-coral);
+            border-radius: 1rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-btn:hover {
+            background: var(--primary-coral);
+            color: white;
+            transform: translateY(-4px);
+        }
+
+        .landing-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .poster-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 30px 80px rgba(14, 116, 144, 0.15);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .poster-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 50px 100px rgba(14, 116, 144, 0.2);
+            border-color: var(--primary-green);
+        }
+
+        .poster-card img {
+            width: 100%;
+            border-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .poster-copy h2 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+            font-weight: 900;
+        }
+
+        .poster-copy p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .feature-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 4rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(16, 185, 129, 0.15);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 12px 40px rgba(14, 116, 144, 0.08);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 60px rgba(14, 116, 144, 0.15);
+            border-color: var(--primary-green);
+        }
+
+        .feature-card strong {
+            display: block;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-coral) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .steps-panel {
+            padding: 5rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .steps-panel > div:first-child {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .steps-panel h2 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .steps-panel > div:first-child p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .steps-grid article {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(16, 185, 129, 0.15);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 12px 40px rgba(14, 116, 144, 0.08);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .steps-grid article:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 60px rgba(14, 116, 144, 0.15);
+            border-color: var(--primary-green);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border-radius: 50%;
+            font-weight: 900;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
+        }
+
+        .steps-grid h3 {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .steps-grid p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .landing-hero {
+                grid-template-columns: 1fr;
+                padding: 3rem 1.5rem;
+            }
+            .landing-copy h1 {
+                font-size: 2.2rem;
+            }
+            .steps-panel {
+                padding: 3rem 1.5rem;
+            }
+            .steps-panel h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#why">Why Join</a>
+            <a href="#steps">Process</a>
+            <a href="/apply">Apply Now</a>
+        </div>
+    </nav>
+
+    <header class="landing-hero" id="home">
+        <div class="landing-copy">
+            <span class="eyebrow">🏥 Join Our Elite Team</span>
+            <h1>Launch Your Healthcare Career with Ethio Health Care</h1>
+            <p>We're actively recruiting passionate healthcare professionals — nurses, doctors, midwives, and caregivers. Submit a professional application that highlights your expertise, experience, and dedication to excellence. Our leadership team personally reviews every submission.</p>
+            <div class="hero-buttons">
+                <a href="/apply" class="primary-btn">→ Start Application Now</a>
+                <a href="#why" class="secondary-btn">Learn More</a>
+            </div>
+        </div>
+        <div class="landing-visual">
+            <div class="poster-card">
+                <span class="badge">✨ Professional Recruitment Portal</span>
+                <img src="{{ url_for('static', filename='css/images/poster.png') }}" alt="Ethio Health Care Recruitment Poster">
+                <div class="poster-copy">
+                    <h2>Your Success Starts Here</h2>
+                    <p>A streamlined 3-step process designed to showcase your qualifications and help you stand out to our hiring team.</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="feature-strip" id="why">
+        <div class="feature-card">
+            <strong>⚡ Lightning-Fast Review</strong>
+            <p>Your application goes directly to our CEO and senior hiring team. We prioritize your time and respond promptly with feedback.</p>
+        </div>
+        <div class="feature-card">
+            <strong>✓ Seamless Process</strong>
+            <p>One comprehensive form. Tell your professional story, showcase your achievements, and upload your CV all in one place.</p>
+        </div>
+        <div class="feature-card">
+            <strong>💚 Trusted Excellence</strong>
+            <p>Join a network of exceptional healthcare professionals dedicated to delivering compassionate, quality care to families in need.</p>
+        </div>
+    </section>
+
+    <section class="steps-panel" id="steps">
+        <div>
+            <h2>Complete Your Application in 3 Steps</h2>
+            <p>Join hundreds of successful healthcare professionals working with Ethio Health Care. Get started today and take the next step in your career.</p>
+        </div>
+        <div class="steps-grid">
+            <article>
+                <span class="step-number">1</span>
+                <h3>Professional Information</h3>
+                <p>Provide your full name, contact details, and select your healthcare specialty. All information is securely encrypted and protected.</p>
+            </article>
+            <article>
+                <span class="step-number">2</span>
+                <h3>Share Your Story</h3>
+                <p>Describe your professional experience, key achievements, certifications, and what drives your passion for healthcare excellence.</p>
+            </article>
+            <article>
+                <span class="step-number">3</span>
+                <h3>Submit Your CV</h3>
+                <p>Upload your professional PDF CV. Our team will thoroughly review your qualifications and contact you with next steps.</p>
+            </article>
+        </div>
+    </section>
+</body>
+</html>

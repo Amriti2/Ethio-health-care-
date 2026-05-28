@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="verify-page">
+        <div class="verify-card">
+            {% if success %}
+            <span class="eyebrow">Verification complete</span>
+            <h1>Thank you, {{ application.name }}.</h1>
+            <p>Your email has been verified successfully and your application is now marked verified.</p>
+            {% else %}
+            <span class="eyebrow">Verification failed</span>
+            <h1>Invalid or expired link.</h1>
+            <p>Please contact Ethio Health Care support if you believe this is an error.</p>
+            {% endif %}
+            <a href="/" class="primary-btn">Return home</a>
+        </div>
+    </main>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="verify-page">
+        <div class="verify-card">
+            {% if success %}
+            <span class="eyebrow">Verification complete</span>
+            <h1>Thank you, {{ application.name }}.</h1>
+            <p>Your email has been verified successfully and your application is now marked verified.</p>
+            {% else %}
+            <span class="eyebrow">Verification failed</span>
+            <h1>Invalid or expired link.</h1>
+            <p>Please contact Ethio Health Care support if you believe this is an error.</p>
+            {% endif %}
+            <a href="/" class="primary-btn">Return home</a>
+        </div>
+    </main>
+</body>
+</html>
