@@ -39,7 +39,7 @@ body{
 /* NAVBAR */
 
 nav{
-    background:linear-gradient(135deg,#0f766e,#0891b2);
+    background:#0f4c75;
     padding:1.2rem 3rem;
     display:flex;
     justify-content:space-between;
@@ -47,6 +47,7 @@ nav{
     position:sticky;
     top:0;
     z-index:1000;
+    box-shadow:0 14px 32px rgba(15,76,117,0.2);
 }
 
 .brand{
@@ -88,13 +89,15 @@ nav{
 /* HEADER */
 
 .dashboard-header{
-    background:linear-gradient(135deg,#0f766e 0%,#14b8a6 55%,#38bdf8 100%);
+    background:linear-gradient(135deg,#0f4c75 0%,#3282b8 55%,#7dd3fc 100%);
     border-radius:35px;
     padding:3rem;
     color:white;
     text-align:center;
     margin-bottom:2rem;
     box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
 }
 
 .dashboard-header h1{
@@ -128,15 +131,18 @@ nav{
     width:420px;
     max-width:100%;
     padding:1rem 1.2rem;
-    border:none;
+    border:1px solid rgba(15,118,210,0.16);
     border-radius:16px;
     outline:none;
     font-size:1rem;
+    background:white;
+    color:var(--text);
+    box-shadow:0 18px 35px rgba(15,118,210,0.08);
 }
 
 .dashboard-search button{
     border:none;
-    background:var(--primary);
+    background:#ff5a60;
     color:white;
     font-weight:800;
     padding:1rem 1.4rem;
@@ -165,6 +171,7 @@ nav{
     box-shadow:var(--shadow);
     text-align:center;
     transition:0.3s;
+    border:1px solid rgba(15,118,210,0.12);
 }
 
 .summary-card:hover{
@@ -192,11 +199,11 @@ nav{
 /* SMALL CLEAN BOX STYLE */
 
 .app-card{
-    background: linear-gradient(180deg, rgba(255,255,255,0.96), #f7fcff);
+    background:white;
     border-radius:28px;
     padding:2rem;
     box-shadow:var(--shadow);
-    border:1px solid rgba(16,118,117,0.12);
+    border:1px solid rgba(15,118,210,0.14);
 }
 
 /* TOP */
@@ -246,12 +253,12 @@ nav{
 }
 
 .phone-box{
-    background:linear-gradient(135deg,#16a34a,#0f766e);
+    background:linear-gradient(135deg,#0ea5e9,#0f4c75);
     color:white;
     padding:1rem 1.2rem;
     border-radius:16px;
     font-weight:700;
-    box-shadow:0 10px 30px rgba(16,118,117,0.15);
+    box-shadow:0 10px 30px rgba(15,118,210,0.18);
 }
 
 /* INFO SQUARES */
@@ -333,12 +340,12 @@ nav{
 }
 
 .btn-primary{
-    background:linear-gradient(135deg,#0f766e,#14b8a6);
+    background:linear-gradient(135deg,#0f4c75,#3282b8);
     color:white;
 }
 
 .btn-success{
-    background:linear-gradient(135deg,#10b981,#059669);
+    background:linear-gradient(135deg,#059669,#10b981);
     color:white;
 }
 
