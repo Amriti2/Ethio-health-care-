@@ -1,616 +1,701 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEO Dashboard - Ethio Health Care</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .dashboard-page {
-            background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
-            min-height: 100vh;
-            padding: 2rem 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .dashboard-header {
-            background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #06b6d4 100%);
-            color: white;
-            padding: 3rem 4rem;
-            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+<title>CEO Dashboard | EthioHealth</title>
 
-        .dashboard-header span {
-            display: block;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-        }
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-        .dashboard-header h1 {
-            font-size: 2.8rem;
-            margin: 0.5rem 0;
-            font-weight: 900;
-        }
+<style>
 
-        .dashboard-header p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-            max-width: 600px;
-            margin: 1rem auto 0;
-        }
+:root{
+    --primary:#0f766e;
+    --secondary:#14b8a6;
+    --blue:#06b6d4;
+    --light:#f2fbff;
+    --white:#ffffff;
+    --text:#0f172a;
+    --gray:#475569;
+    --border:#c8e7f3;
+    --shadow:0 18px 45px rgba(15,118,110,0.12);
+    --radius:24px;
+}
 
-        .dashboard-search {
-            margin: 1.75rem 0 0;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        .dashboard-search input {
-            width: min(520px, 100%);
-            padding: 1rem 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            font-size: 1rem;
-        }
+body{
+    background: linear-gradient(180deg, #e8f8fc 0%, #f8fbff 100%);
+    font-family:Inter,sans-serif;
+    color:var(--text);
+}
 
-        .dashboard-search input::placeholder {
-            color: rgba(255, 255, 255, 0.8);
-        }
+/* NAVBAR */
 
-        .dashboard-search button {
-            padding: 1rem 1.5rem;
-            border: none;
-            border-radius: 1rem;
-            background: #ffffff;
-            color: #0f766e;
-            font-weight: 900;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
+nav{
+    background:linear-gradient(135deg,#0f766e,#0891b2);
+    padding:1.2rem 3rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
 
-        .dashboard-search button:hover {
-            transform: translateY(-2px);
-        }
+.brand{
+    font-size:2rem;
+    font-weight:900;
+    color:white;
+}
 
-        .smtp-warning {
-            margin: 1rem auto 0;
-            max-width: 760px;
-            background: rgba(255, 255, 255, 0.18);
-            color: #fff;
-            padding: 1rem 1.2rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            font-size: 0.95rem;
-        }
+.brand span{
+    color:#cffafe;
+}
 
-        .flash-grid {
-            display: grid;
-            gap: 0.75rem;
-            max-width: 1200px;
-            margin: 1.5rem auto;
-            padding: 0 4rem;
-        }
+.nav-links{
+    display:flex;
+    gap:1rem;
+}
 
-        .flash-message {
-            padding: 1rem 1.25rem;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.08);
-            color: var(--text-primary);
-            font-weight: 700;
-        }
+.nav-links a{
+    color:white;
+    text-decoration:none;
+    font-weight:700;
+    padding:0.8rem 1rem;
+    border-radius:12px;
+    transition:0.3s;
+}
 
-        .dashboard-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            padding: 0 4rem 2rem;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+.nav-links a:hover{
+    background:rgba(255,255,255,0.12);
+}
 
-        .summary-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 1.2rem;
-            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.15);
-            text-align: center;
-            transition: all 0.3s ease;
-            border-top: 4px solid var(--primary-green);
-        }
+/* PAGE */
 
-        .summary-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(15, 118, 110, 0.25);
-        }
+.dashboard-page{
+    max-width:1500px;
+    margin:auto;
+    padding:2rem;
+}
 
-        .summary-card span {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.8rem;
-            font-weight: 600;
-        }
+/* HEADER */
 
-        .summary-card strong {
-            display: block;
-            font-size: 2.8rem;
-            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 900;
-        }
+.dashboard-header{
+    background:linear-gradient(135deg,#0f766e 0%,#14b8a6 55%,#38bdf8 100%);
+    border-radius:35px;
+    padding:3rem;
+    color:white;
+    text-align:center;
+    margin-bottom:2rem;
+    box-shadow:var(--shadow);
+}
 
-        .applications-list {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 4rem;
-        }
+.dashboard-header h1{
+    font-size:3rem;
+    margin-bottom:1rem;
+    font-weight:900;
+}
 
-        .app-card {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 40px rgba(15, 118, 110, 0.12);
-            transition: all 0.3s ease;
-            border-left: 5px solid var(--primary-green);
-        }
+.dashboard-header p{
+    opacity:0.92;
+    max-width:700px;
+    margin:auto;
+    line-height:1.8;
+    font-size:1.05rem;
+}
 
-        .app-card:hover {
-            box-shadow: 0 20px 60px rgba(15, 118, 110, 0.18);
-            transform: translateY(-4px);
-        }
+/* SEARCH */
 
-        .app-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid rgba(15, 118, 110, 0.1);
-        }
+.dashboard-search{
+    margin-top:2rem;
+}
 
-        .app-card-header h2 {
-            font-size: 1.6rem;
-            color: var(--text-primary);
-            margin: 0;
-            font-weight: 900;
-        }
+.dashboard-search form{
+    display:flex;
+    justify-content:center;
+    gap:1rem;
+    flex-wrap:wrap;
+}
 
-        .status-pill {
-            display: inline-block;
-            padding: 0.6rem 1.2rem;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+.dashboard-search input{
+    width:420px;
+    max-width:100%;
+    padding:1rem 1.2rem;
+    border:none;
+    border-radius:16px;
+    outline:none;
+    font-size:1rem;
+}
 
-        .status-pending {
-            background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
-            color: #dc2626;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
+.dashboard-search button{
+    border:none;
+    background:var(--primary);
+    color:white;
+    font-weight:800;
+    padding:1rem 1.4rem;
+    border-radius:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
 
-        .status-approved {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
-            color: #059669;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
+.dashboard-search button:hover{
+    transform:translateY(-2px);
+}
 
-        .status-verified {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
-            color: #2563eb;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
+/* SUMMARY */
 
-        .meta-row {
-            display: flex;
-            gap: 2rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-        }
+.dashboard-summary{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:1.2rem;
+    margin-bottom:2rem;
+}
 
-        .meta-row span {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.summary-card{
+    background:white;
+    border-radius:24px;
+    padding:2rem;
+    box-shadow:var(--shadow);
+    text-align:center;
+    transition:0.3s;
+}
 
-        .meta-row span::before {
-            content: '';
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--primary-green);
-            border-radius: 50%;
-        }
+.summary-card:hover{
+    transform:translateY(-5px);
+}
 
-        .phone-badge {
-            background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-blue) 100%);
-            color: white;
-            padding: 0.8rem 1.3rem;
-            border-radius: 0.8rem;
-            font-weight: 700;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.summary-card h3{
+    color:var(--gray);
+    margin-bottom:1rem;
+    font-size:1rem;
+}
 
-        .phone-badge::before {
-            content: '📱';
-            font-size: 1.2rem;
-        }
+.summary-card strong{
+    font-size:2.6rem;
+    color:var(--primary);
+}
 
-        .app-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
+/* APPLICATIONS */
 
-        .app-grid > div {
-            display: grid;
-            gap: 1rem;
-        }
+.applications-list{
+    display:grid;
+    gap:1.5rem;
+}
 
-        .app-grid p {
-            margin: 0;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
+/* SMALL CLEAN BOX STYLE */
 
-        .app-grid strong {
-            color: var(--primary-green);
-            font-weight: 700;
-        }
+.app-card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), #f7fcff);
+    border-radius:28px;
+    padding:2rem;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(16,118,117,0.12);
+}
 
-        .app-grid a {
-            color: var(--primary-blue);
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
+/* TOP */
 
-        .app-grid a:hover {
-            color: var(--primary-green);
-            text-decoration: underline;
-        }
+.app-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:1rem;
+    margin-bottom:1.5rem;
+}
 
-        .action-grid,
-        .action-panel {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
-            border-radius: 1rem;
-            border: 1px solid rgba(16, 185, 129, 0.15);
-        }
+.app-top h2{
+    font-size:1.6rem;
+    font-weight:900;
+}
 
-        .action-grid label,
-        .action-panel label {
-            display: grid;
-            gap: 0.5rem;
-        }
+.status-pill{
+    display:inline-block;
+    margin-top:0.6rem;
+    padding:0.55rem 1rem;
+    border-radius:999px;
+    font-size:0.8rem;
+    font-weight:800;
+    text-transform:uppercase;
+}
 
-        .action-grid span,
-        .action-panel span {
-            font-weight: 700;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-        }
+.status-pending{
+    background:#fff7ed;
+    color:#ea580c;
+}
 
-        .action-grid input,
-        .action-grid textarea,
-        .action-panel textarea {
-            padding: 0.8rem;
-            border: 2px solid rgba(16, 185, 129, 0.2);
-            border-radius: 0.7rem;
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-        }
+.status-approved{
+    background:#ecfdf5;
+    color:#059669;
+}
 
-        .action-grid input:focus,
-        .action-grid textarea:focus,
-        .action-panel textarea:focus {
-            outline: none;
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
+.status-rejected{
+    background:#fef2f2;
+    color:#dc2626;
+}
 
-        .btn-primary,
-        .btn-secondary {
-            padding: 1rem;
-            border: none;
-            border-radius: 0.8rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+.status-verified{
+    background:#eff6ff;
+    color:#2563eb;
+}
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-        }
+.phone-box{
+    background:linear-gradient(135deg,#16a34a,#0f766e);
+    color:white;
+    padding:1rem 1.2rem;
+    border-radius:16px;
+    font-weight:700;
+    box-shadow:0 10px 30px rgba(16,118,117,0.15);
+}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-        }
+/* INFO SQUARES */
 
-        .btn-secondary {
-            background: white;
-            color: var(--primary-green);
-            border: 2px solid var(--primary-green);
-        }
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:1rem;
+    margin-bottom:1.5rem;
+}
 
-        .btn-secondary:hover {
-            background: var(--primary-green);
-            color: white;
-        }
+.info-box{
+    background:#f8fafc;
+    padding:1.2rem;
+    border-radius:20px;
+    border:1px solid var(--border);
+    min-height:150px;
+}
 
-        .btn-accept {
-            padding: 1rem;
-            border: none;
-            border-radius: 0.8rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-        }
+.info-box h4{
+    color:var(--primary);
+    margin-bottom:0.8rem;
+    font-size:1rem;
+}
 
-        .btn-accept:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
-        }
+.info-box p{
+    color:var(--gray);
+    line-height:1.7;
+    font-size:0.95rem;
+}
 
-        .btn-reject {
-            padding: 1rem;
-            border: none;
-            border-radius: 0.8rem;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
-        }
+/* ACTIONS */
 
-        .btn-reject:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
-        }
+.action-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:1rem;
+    margin-top:1rem;
+}
 
-        .message-thread {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            border-left: 4px solid #3b82f6;
-            margin-top: 1.5rem;
-        }
+.action-box{
+    background:#f8fafc;
+    padding:1rem;
+    border-radius:20px;
+    border:1px solid var(--border);
+}
 
-        .message-thread strong {
-            display: block;
-            margin-bottom: 1rem;
-            color: var(--primary-blue);
-        }
+.action-box input,
+.action-box textarea{
+    width:100%;
+    padding:0.9rem;
+    border-radius:14px;
+    border:1px solid #dbeafe;
+    margin-top:0.8rem;
+    outline:none;
+    font-family:inherit;
+}
 
-        .message-thread ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+.action-box textarea{
+    resize:vertical;
+    min-height:120px;
+}
 
-        .message-thread li {
-            padding: 0.8rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border-radius: 0.6rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
+/* BUTTONS */
 
-        @media (max-width: 1024px) {
-            .app-grid {
-                grid-template-columns: 1fr;
-            }
-            .meta-row {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
+.btn{
+    width:100%;
+    border:none;
+    padding:1rem;
+    border-radius:16px;
+    font-weight:800;
+    cursor:pointer;
+    margin-top:1rem;
+    transition:0.3s;
+}
 
-        @media (max-width: 768px) {
-            .dashboard-header {
-                padding: 2rem 1.5rem;
-            }
-            .dashboard-header h1 {
-                font-size: 2rem;
-            }
-            .dashboard-summary,
-            .applications-list {
-                padding-left: 1.5rem;
-                padding-right: 1.5rem;
-            }
-            .app-card-header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-        }
-    </style>
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.btn-primary{
+    background:linear-gradient(135deg,#0f766e,#14b8a6);
+    color:white;
+}
+
+.btn-success{
+    background:linear-gradient(135deg,#10b981,#059669);
+    color:white;
+}
+
+.btn-danger{
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+    color:white;
+}
+
+.btn-dark{
+    background:#0f172a;
+    color:white;
+}
+
+/* MESSAGE HISTORY */
+
+.message-thread{
+    margin-top:1.5rem;
+    background:#f8fafc;
+    border-radius:20px;
+    padding:1.2rem;
+}
+
+.message-thread h3{
+    margin-bottom:1rem;
+    color:var(--primary);
+}
+
+.message-thread li{
+    background:white;
+    padding:1rem;
+    border-radius:14px;
+    margin-bottom:0.8rem;
+    list-style:none;
+    border:1px solid var(--border);
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    .dashboard-header h1{
+        font-size:2rem;
+    }
+
+    nav{
+        padding:1rem;
+    }
+
+    .dashboard-page{
+        padding:1rem;
+    }
+
+}
+
+</style>
 </head>
+
 <body>
-    <nav>
-        <div class="brand">Ethio<span>Health</span></div>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/logout">Logout</a>
+
+<nav>
+
+    <div class="brand">
+        Ethio<span>Health</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+</nav>
+
+<main class="dashboard-page">
+
+    <!-- HEADER -->
+
+    <section class="dashboard-header">
+
+        <h1>CEO Dashboard</h1>
+
+        <p>
+            Manage healthcare applicants, approve candidates,
+            send verification emails, and organize your medical team professionally.
+        </p>
+
+        <div class="dashboard-search">
+
+            <form method="GET" action="{{ url_for('dashboard') }}">
+
+                <input
+                type="text"
+                name="search"
+                placeholder="Search applicants..."
+                value="{{ search_query or '' }}">
+
+                <button type="submit">
+                    🔍 Search
+                </button>
+
+            </form>
+
         </div>
-    </nav>
 
-    <main class="dashboard-page">
-        <section class="dashboard-header">
-            <div>
-                <span class="eyebrow">👔 Secure Admin Access</span>
-                <h1>CEO Dashboard</h1>
-                <p>Review applications, manage candidates, and build your elite healthcare team</p>                <div class="dashboard-search">
-                    <form method="get" action="{{ url_for('dashboard') }}">
-                        <input type="text" name="search" placeholder="Search by name, email, phone, role, status, shift" value="{{ search_query or '' }}">
-                        <button type="submit">Search</button>
-                    </form>
-                </div>
-                {% if not smtp_configured %}
-                <p class="smtp-warning">SMTP is not configured. Email actions will print the message to console/logs but will not send real emails until SMTP settings are added.</p>
-                {% endif %}            </div>
-        </section>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-grid">
-                    {% for message in messages %}
-                        <div class="flash-message">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+    </section>
 
-        <section class="dashboard-summary">
-            <div class="summary-card">
-                <span>📊 Total applications</span>
-                <strong>{{ applications|length }}</strong>
+    <!-- SUMMARY -->
+
+    <section class="dashboard-summary">
+
+        <div class="summary-card">
+            <h3>Total Applications</h3>
+            <strong>{{ applications|length }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <h3>Approved</h3>
+            <strong>{{ applications|selectattr('status','equalto','approved')|list|length }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <h3>Pending</h3>
+            <strong>{{ applications|selectattr('status','equalto','pending')|list|length }}</strong>
+        </div>
+
+        <div class="summary-card">
+            <h3>Verified</h3>
+            <strong>{{ applications|selectattr('verified')|list|length }}</strong>
+        </div>
+
+    </section>
+
+    <!-- APPLICATIONS -->
+
+    <section class="applications-list">
+
+        {% for application in applications|sort(attribute='submitted_at', reverse=True) %}
+
+        <article class="app-card">
+
+            <div class="app-top">
+
+                <div>
+
+                    <h2>{{ application.name }}</h2>
+
+                    <span class="status-pill status-{{ application.status|default('pending') }}">
+                        {{ application.status }}
+                    </span>
+
+                </div>
+
+                <div class="phone-box">
+                    📱 {{ application.phone }}
+                </div>
+
             </div>
-            <div class="summary-card">
-                <span>✅ Approved</span>
-                <strong>{{ applications|selectattr('status', 'equalto', 'approved')|list|length }}</strong>
-            </div>
-            <div class="summary-card">
-                <span>⏳ Pending</span>
-                <strong>{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</strong>
-            </div>
-            <div class="summary-card">
-                <span>☑️ Verified</span>
-                <strong>{{ applications|selectattr('verified')|list|length }}</strong>
-            </div>
-        </section>
 
-        <section class="applications-list">
-            {% for application in applications|sort(attribute='submitted_at', reverse=True) %}
-            <article class="app-card">
-                <div class="app-card-header">
-                    <div>
-                        <h2>{{ application.name }}</h2>
-                        <span class="status-pill status-{{ application.status|default('pending') }}">{{ application.status|capitalize }}</span>
-                    </div>
-                    <div class="phone-badge">{{ application.phone }}</div>
+            <!-- SMALL CLEAN SQUARES -->
+
+            <div class="info-grid">
+
+                <div class="info-box">
+                    <h4>Role</h4>
+                    <p>{{ application.role }}</p>
                 </div>
 
-                <div class="meta-row">
-                    <span>🏥 {{ application.role }}</span>
-                    <span>📧 {{ application.email }}</span>
-                    <span>⏱️ {{ application.experience_years or 'N/A' }}</span>
-                    <span>🕐 {{ application.shift_preference or 'N/A' }}</span>
+                <div class="info-box">
+                    <h4>Email</h4>
+                    <p>{{ application.email }}</p>
                 </div>
 
-                <div class="app-grid">
-                    <div>
-                        <p><strong>Experience:</strong> {{ application.experience }}</p>
-                        <p><strong>Qualifications:</strong> {{ application.qualifications or 'Not specified' }}</p>
-                        <p><strong>About:</strong> {{ application.about }}</p>
-                    </div>
-                    <div>
-                        <p><strong>Message:</strong> {{ application.message or 'No message provided' }}</p>
-                        <p><strong>Account Email:</strong> {{ application.account_email or '❌ Not assigned' }}</p>
-                        <p><strong>Verified:</strong> {{ '✅ Yes' if application.verified else '⏳ Pending' }}</p>
-                        <p><strong>CV:</strong>
-                            {% if application.cv %}
-                                <a href="{{ url_for('uploaded_file', filename=application.cv) }}" target="_blank">📄 Download CV</a>
-                            {% else %}
-                                ❌ Not uploaded
-                            {% endif %}
-                        </p>
-                    </div>
+                <div class="info-box">
+                    <h4>Experience</h4>
+                    <p>{{ application.experience }}</p>
                 </div>
 
-                <form class="action-grid" method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
+                <div class="info-box">
+                    <h4>Qualifications</h4>
+                    <p>{{ application.qualifications or 'Not specified' }}</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>About Applicant</h4>
+                    <p>{{ application.about }}</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>CV</h4>
+
+                    {% if application.cv %}
+
+                    <p>
+                        <a href="{{ url_for('uploaded_file', filename=application.cv) }}">
+                            📄 Download CV
+                        </a>
+                    </p>
+
+                    {% else %}
+
+                    <p>No CV Uploaded</p>
+
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+
+            <div class="action-grid">
+
+                <!-- EMAIL -->
+
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
                     <input type="hidden" name="action" value="assign_email">
-                    <label>
-                        <span>Assign Account Email</span>
-                        <input type="email" name="account_email" placeholder="applicant@domain.com" value="{{ application.account_email }}">
-                    </label>
-                    <button type="submit" class="btn-secondary">💾 Save Email</button>
+
+                    <strong>Assign Email</strong>
+
+                    <input
+                    type="email"
+                    name="account_email"
+                    placeholder="employee@email.com"
+                    value="{{ application.account_email }}">
+
+                    <button class="btn btn-dark">
+                        Save Email
+                    </button>
+
                 </form>
 
-                <form class="action-panel" method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
-                    <input type="hidden" name="action" value="send_verification">
-                    <button type="submit" class="btn-primary">✉️ Send Verification Link</button>
-                </form>
+                <!-- MESSAGE -->
 
-                <form class="action-panel" method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
                     <input type="hidden" name="action" value="send_message">
-                    <label>
-                        <span>Send Message to Applicant</span>
-                        <textarea name="ceo_message" placeholder="Type your message here..."></textarea>
-                    </label>
-                    <button type="submit" class="btn-primary">📬 Send Message</button>
+
+                    <strong>Send Message</strong>
+
+                    <textarea
+                    name="ceo_message"
+                    placeholder="Write message here..."></textarea>
+
+                    <button class="btn btn-primary">
+                        Send Message
+                    </button>
+
                 </form>
-                <div style="display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 1rem;">
-                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
-                        <input type="hidden" name="action" value="accept">
-                        <button type="submit" class="btn-accept">✅ Accept Applicant</button>
-                    </form>
-                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
-                        <input type="hidden" name="action" value="reject">
-                        <button type="submit" class="btn-reject">❌ Reject Applicant</button>
-                    </form>
-                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}">
-                        <input type="hidden" name="action" value="delete">
-                        <button type="submit" class="btn-reject">🗑️ Delete Applicant</button>
-                    </form>
-                </div>
-                {% if application.messages %}
-                <div class="message-thread">
-                    <strong>💬 Message History</strong>
-                    <ul>
-                        {% for note in application.messages %}
-                        <li><strong>{{ note.from }}:</strong> {{ note.message }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-            </article>
-            {% endfor %}
-        </section>
-    </main>
+
+                <!-- VERIFY -->
+
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
+                    <input type="hidden" name="action" value="send_verification">
+
+                    <strong>Email Verification</strong>
+
+                    <button class="btn btn-primary">
+                        Send Verification
+                    </button>
+
+                </form>
+
+                <!-- ACCEPT -->
+
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
+                    <input type="hidden" name="action" value="accept">
+
+                    <strong>Approve Applicant</strong>
+
+                    <button class="btn btn-success">
+                        Accept Applicant
+                    </button>
+
+                </form>
+
+                <!-- REJECT -->
+
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
+                    <input type="hidden" name="action" value="reject">
+
+                    <strong>Reject Applicant</strong>
+
+                    <button class="btn btn-danger">
+                        Reject Applicant
+                    </button>
+
+                </form>
+
+                <!-- DELETE -->
+
+                <form
+                class="action-box"
+                method="POST"
+                action="{{ url_for('dashboard_action', app_id=application.id) }}">
+
+                    <input type="hidden" name="action" value="delete">
+
+                    <strong>Delete Applicant</strong>
+
+                    <button class="btn btn-danger">
+                        Delete Applicant
+                    </button>
+
+                </form>
+
+            </div>
+
+            <!-- MESSAGE HISTORY -->
+
+            {% if application.messages %}
+
+            <div class="message-thread">
+
+                <h3>💬 Message History</h3>
+
+                <ul>
+
+                    {% for note in application.messages %}
+
+                    <li>
+                        <strong>{{ note.from }}:</strong>
+                        {{ note.message }}
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+            {% endif %}
+
+        </article>
+
+        {% endfor %}
+
+    </section>
+
+</main>
+
 </body>
 </html>
-
+```
