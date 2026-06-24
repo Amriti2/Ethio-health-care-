@@ -374,44 +374,103 @@ def dashboard_action(app_id):
 
     action = request.form.get("action")
 
-    # ACCEPT
-    if action == "accept":
+    # ASSIGN EMAIL
+    if action == "assign_email":
 
-        application["status"] = "accepted"
+        new_email = request.form.get("account_email", "").strip()
 
+        if new_email:
+            application["account_email"] = new_email
+            update_application(application)
+            flash("Employee email saved successfully.")
+        else:
+            flash("Please enter a valid email address.")
+
+    # SEND MESSAGE
+    elif action == "send_message":
+
+        ceo_message = request.form.get("ceo_message", "").strip()
+
+        if not ceo_message:
+            flash("Please enter a message before sending.")
+        else:
+            application.setdefault("messages", []).append({
+                "from": "CEO",
+                "message": ceo_message,
+                "sent_at": int(time.time())
+            })
+            update_application(application)
+
+            subject = "Message from Ethio Health Care"
+            body = f"""
+Hello {application['name']},
+
+A message from the Ethio Health Care team:
+
+{ceo_message}
+
+Regards,
+Ethio Health Care
+"""
+            recipient = application.get("account_email") or application.get("email")
+            send_email(recipient, subject, body)
+            flash("Message sent to applicant.")
+
+    # VERIFICATION EMAIL
+    elif action == "send_verification":
+
+        if not application.get("verification_token"):
+            application["verification_token"] = str(uuid.uuid4())
+
+        application["status"] = "verification_sent"
         update_application(application)
 
-        subject = "Congratulations! You Have Been Accepted"
+        verification_link = f"{BASE_URL}/verify/{application['verification_token']}"
+        subject = "Verify Your Ethio Health Care Application"
+        body = f"""
+Hello {application['name']},
 
+Please verify your application by clicking the link below:
+{verification_link}
+
+Thank you,
+Ethio Health Care
+"""
+        recipient = application.get("account_email") or application.get("email")
+        send_email(recipient, subject, body)
+        flash("Verification email sent.")
+
+    # ACCEPT
+    elif action == "accept":
+
+        application["status"] = "approved"
+        update_application(application)
+
+        subject = "Congratulations! You Have Been Approved"
         body = f"""
 Hello {application['name']},
 
 Congratulations!
 
 We are pleased to inform you that your application for the role of
-{application['role']} has been accepted.
+{application['role']} has been approved.
 
 Further onboarding details will be sent soon.
 
 Regards,
 Ethio Health Care
 """
-
         recipient = application.get("account_email") or application.get("email")
-
         send_email(recipient, subject, body)
-
-        flash("Applicant accepted successfully.")
+        flash("Applicant approved successfully.")
 
     # REJECT
     elif action == "reject":
 
         application["status"] = "rejected"
-
         update_application(application)
 
         subject = "Ethio Health Care Application"
-
         body = f"""
 Hello {application['name']},
 
@@ -426,31 +485,21 @@ in the future.
 Regards,
 Ethio Health Care
 """
-
         recipient = application.get("account_email") or application.get("email")
-
         send_email(recipient, subject, body)
-
         flash("Applicant rejected.")
 
     # DELETE
     elif action == "delete":
 
         cv_file = application.get("cv")
-
         if cv_file:
             try:
-                os.remove(
-                    os.path.join(
-                        app.config["UPLOAD_FOLDER"],
-                        cv_file
-                    )
-                )
+                os.remove(os.path.join(app.config["UPLOAD_FOLDER"], cv_file))
             except:
                 pass
 
         delete_application(app_id)
-
         flash("Applicant deleted.")
 
     return redirect(url_for("dashboard"))

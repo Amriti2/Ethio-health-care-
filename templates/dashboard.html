@@ -1,708 +1,570 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>CEO Dashboard | EthioHealth</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-<style>
-
-:root{
-    --primary:#0f766e;
-    --secondary:#14b8a6;
-    --blue:#06b6d4;
-    --light:#f2fbff;
-    --white:#ffffff;
-    --text:#0f172a;
-    --gray:#475569;
-    --border:#c8e7f3;
-    --shadow:0 18px 45px rgba(15,118,110,0.12);
-    --radius:24px;
-}
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    background: linear-gradient(180deg, #e8f8fc 0%, #f8fbff 100%);
-    font-family:Inter,sans-serif;
-    color:var(--text);
-}
-
-/* NAVBAR */
-
-nav{
-    background:#0f4c75;
-    padding:1.2rem 3rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    box-shadow:0 14px 32px rgba(15,76,117,0.2);
-}
-
-.brand{
-    font-size:2rem;
-    font-weight:900;
-    color:white;
-}
-
-.brand span{
-    color:#cffafe;
-}
-
-.nav-links{
-    display:flex;
-    gap:1rem;
-}
-
-.nav-links a{
-    color:white;
-    text-decoration:none;
-    font-weight:700;
-    padding:0.8rem 1rem;
-    border-radius:12px;
-    transition:0.3s;
-}
-
-.nav-links a:hover{
-    background:rgba(255,255,255,0.12);
-}
-
-/* PAGE */
-
-.dashboard-page{
-    max-width:1500px;
-    margin:auto;
-    padding:2rem;
-}
-
-/* HEADER */
-
-.dashboard-header{
-    background:linear-gradient(135deg,#0f4c75 0%,#3282b8 55%,#7dd3fc 100%);
-    border-radius:35px;
-    padding:3rem;
-    color:white;
-    text-align:center;
-    margin-bottom:2rem;
-    box-shadow:var(--shadow);
-    position:relative;
-    overflow:hidden;
-}
-
-.dashboard-header h1{
-    font-size:3rem;
-    margin-bottom:1rem;
-    font-weight:900;
-}
-
-.dashboard-header p{
-    opacity:0.92;
-    max-width:700px;
-    margin:auto;
-    line-height:1.8;
-    font-size:1.05rem;
-}
-
-/* SEARCH */
-
-.dashboard-search{
-    margin-top:2rem;
-}
-
-.dashboard-search form{
-    display:flex;
-    justify-content:center;
-    gap:1rem;
-    flex-wrap:wrap;
-}
-
-.dashboard-search input{
-    width:420px;
-    max-width:100%;
-    padding:1rem 1.2rem;
-    border:1px solid rgba(15,118,210,0.16);
-    border-radius:16px;
-    outline:none;
-    font-size:1rem;
-    background:white;
-    color:var(--text);
-    box-shadow:0 18px 35px rgba(15,118,210,0.08);
-}
-
-.dashboard-search button{
-    border:none;
-    background:#ff5a60;
-    color:white;
-    font-weight:800;
-    padding:1rem 1.4rem;
-    border-radius:16px;
-    cursor:pointer;
-    transition:0.3s;
-}
-
-.dashboard-search button:hover{
-    transform:translateY(-2px);
-}
-
-/* SUMMARY */
-
-.dashboard-summary{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:1.2rem;
-    margin-bottom:2rem;
-}
-
-.summary-card{
-    background:white;
-    border-radius:24px;
-    padding:2rem;
-    box-shadow:var(--shadow);
-    text-align:center;
-    transition:0.3s;
-    border:1px solid rgba(15,118,210,0.12);
-}
-
-.summary-card:hover{
-    transform:translateY(-5px);
-}
-
-.summary-card h3{
-    color:var(--gray);
-    margin-bottom:1rem;
-    font-size:1rem;
-}
-
-.summary-card strong{
-    font-size:2.6rem;
-    color:var(--primary);
-}
-
-/* APPLICATIONS */
-
-.applications-list{
-    display:grid;
-    gap:1.5rem;
-}
-
-/* SMALL CLEAN BOX STYLE */
-
-.app-card{
-    background:white;
-    border-radius:28px;
-    padding:2rem;
-    box-shadow:var(--shadow);
-    border:1px solid rgba(15,118,210,0.14);
-}
-
-/* TOP */
-
-.app-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:1rem;
-    margin-bottom:1.5rem;
-}
-
-.app-top h2{
-    font-size:1.6rem;
-    font-weight:900;
-}
-
-.status-pill{
-    display:inline-block;
-    margin-top:0.6rem;
-    padding:0.55rem 1rem;
-    border-radius:999px;
-    font-size:0.8rem;
-    font-weight:800;
-    text-transform:uppercase;
-}
-
-.status-pending{
-    background:#fff7ed;
-    color:#ea580c;
-}
-
-.status-approved{
-    background:#ecfdf5;
-    color:#059669;
-}
-
-.status-rejected{
-    background:#fef2f2;
-    color:#dc2626;
-}
-
-.status-verified{
-    background:#eff6ff;
-    color:#2563eb;
-}
-
-.phone-box{
-    background:linear-gradient(135deg,#0ea5e9,#0f4c75);
-    color:white;
-    padding:1rem 1.2rem;
-    border-radius:16px;
-    font-weight:700;
-    box-shadow:0 10px 30px rgba(15,118,210,0.18);
-}
-
-/* INFO SQUARES */
-
-.info-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-    gap:1rem;
-    margin-bottom:1.5rem;
-}
-
-.info-box{
-    background:#f8fafc;
-    padding:1.2rem;
-    border-radius:20px;
-    border:1px solid var(--border);
-    min-height:150px;
-}
-
-.info-box h4{
-    color:var(--primary);
-    margin-bottom:0.8rem;
-    font-size:1rem;
-}
-
-.info-box p{
-    color:var(--gray);
-    line-height:1.7;
-    font-size:0.95rem;
-}
-
-/* ACTIONS */
-
-.action-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:1rem;
-    margin-top:1rem;
-}
-
-.action-box{
-    background:#f8fafc;
-    padding:1rem;
-    border-radius:20px;
-    border:1px solid var(--border);
-}
-
-.action-box input,
-.action-box textarea{
-    width:100%;
-    padding:0.9rem;
-    border-radius:14px;
-    border:1px solid #dbeafe;
-    margin-top:0.8rem;
-    outline:none;
-    font-family:inherit;
-}
-
-.action-box textarea{
-    resize:vertical;
-    min-height:120px;
-}
-
-/* BUTTONS */
-
-.btn{
-    width:100%;
-    border:none;
-    padding:1rem;
-    border-radius:16px;
-    font-weight:800;
-    cursor:pointer;
-    margin-top:1rem;
-    transition:0.3s;
-}
-
-.btn:hover{
-    transform:translateY(-2px);
-}
-
-.btn-primary{
-    background:linear-gradient(135deg,#0f4c75,#3282b8);
-    color:white;
-}
-
-.btn-success{
-    background:linear-gradient(135deg,#059669,#10b981);
-    color:white;
-}
-
-.btn-danger{
-    background:linear-gradient(135deg,#ef4444,#dc2626);
-    color:white;
-}
-
-.btn-dark{
-    background:#0f172a;
-    color:white;
-}
-
-/* MESSAGE HISTORY */
-
-.message-thread{
-    margin-top:1.5rem;
-    background:#f8fafc;
-    border-radius:20px;
-    padding:1.2rem;
-}
-
-.message-thread h3{
-    margin-bottom:1rem;
-    color:var(--primary);
-}
-
-.message-thread li{
-    background:white;
-    padding:1rem;
-    border-radius:14px;
-    margin-bottom:0.8rem;
-    list-style:none;
-    border:1px solid var(--border);
-}
-
-/* MOBILE */
-
-@media(max-width:768px){
-
-    .dashboard-header h1{
-        font-size:2rem;
-    }
-
-    nav{
-        padding:1rem;
-    }
-
-    .dashboard-page{
-        padding:1rem;
-    }
-
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Dashboard | Ethio Health Care</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           ETHIO HEALTH CARE BRAND THEME VARIABLES
+           ========================================================================== */
+        :root {
+            --brand-primary: #003b5c;    /* Deep Teal from poster logo/header */
+            --brand-secondary: #008080;  /* Muted Teal */
+            --brand-accent: #00a896;     /* Bright Seafoam Green for positive actions */
+            --brand-danger: #d90429;     /* Deep Red for rejections/deletions */
+            --brand-warning: #f59e0b;    /* Amber for pending status */
+            --brand-info: #0284c7;       /* Sky Blue for verification */
+            
+            --bg-main: #f4f7f9;          /* Ultra-light clean gray canvas */
+            --bg-sidebar: #ffffff;       /* Crisp white for administrative structural menus */
+            --card-bg: #ffffff;          /* Clean white for content elements */
+            
+            --text-main: #1e293b;        /* Deep slate for high legibility */
+            --text-muted: #64748b;       /* Muted gray for subtitles/secondary text */
+            --border-color: #e2e8f0;     /* Soft dividing lines */
+        }
+
+        /* ==========================================================================
+           BASE STYLES & RESET
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ==========================================================================
+           SIDEBAR COMPONENT
+           ========================================================================== */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 2.5rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0, 59, 92, 0.03);
+            z-index: 100;
+        }
+
+        .brand-container {
+            margin-bottom: 3rem;
+            padding-left: 0.5rem;
+        }
+
+        .brand-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .brand-logo-text span {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--brand-accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0.2rem;
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.9rem 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(0, 59, 92, 0.05);
+            color: var(--brand-primary);
+        }
+
+        .sidebar a.logout {
+            margin-top: auto;
+            color: #ef4444;
+        }
+        
+        .sidebar a.logout:hover {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        /* ==========================================================================
+           MAIN CONTENT AREA
+           ========================================================================== */
+        .main-content {
+            margin-left: 280px;
+            padding: 2.5rem 3rem;
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        /* HEADER & SEARCH ACTIONS */
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2.5rem;
+            gap: 2rem;
+        }
+
+        .header-title h1 {
+            font-size: 2.24rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            font-size: 1rem;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 450px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .search-form input {
+            flex: 1;
+            padding: 0.85rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: border-color 0.2s;
+        }
+
+        .search-form input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+        }
+
+        .search-form button {
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--brand-primary);
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .search-form button:hover {
+            opacity: 0.95;
+        }
+
+        /* ==========================================================================
+           EXECUTIVE STATS OVERVIEW MATRIX
+           ========================================================================== */
+        .stats-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--brand-primary);
+        }
+
+        .stat-card.approved::before { background: var(--brand-accent); }
+        .stat-card.pending::before { background: var(--brand-warning); }
+        .stat-card.verified::before { background: var(--brand-info); }
+
+        .stat-card h3 {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card strong {
+            font-size: 2.2rem;
+            font-weight: 800;
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--brand-primary);
+        }
+
+        /* ==========================================================================
+           ENHANCED APPLICANT PROFILE SYSTEM (CARDS)
+           ========================================================================== */
+        .applicant-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 59, 92, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .applicant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 59, 92, 0.05);
+        }
+
+        /* Card Top Profile Identity */
+        .card-profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-identity {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 59, 92, 0.1);
+            color: var(--brand-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .applicant-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+        }
+
+        /* Unified System Badges */
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pending  { background: #fffbeb; color: var(--brand-warning); border: 1px solid #fef3c7; }
+        .approved { background: #f0fdf4; color: var(--brand-accent); border: 1px solid #dcfce7; }
+        .rejected { background: #fef2f2; color: var(--brand-danger); border: 1px solid #fee2e2; }
+        .verified { background: #f0f9ff; color: var(--brand-info); border: 1px solid #e0f2fe; }
+
+        /* Information Distribution Grid */
+        .info-distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .data-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+        }
+
+        .data-box h4 {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .data-box p {
+            margin-top: 0.35rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Consolidated Unified Form Management Actions */
+        .unified-action-workspace {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            text-transform: uppercase;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: border-color 0.2s;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            height: 42px;
+            min-height: 42px;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+        }
+
+        /* Action Executable Control Bar */
+        .control-action-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 0.7rem 1.25rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Specific Color Variations to preserve hierarchy */
+        .btn-brand-accent  { background: var(--brand-accent); color: white; }
+        .btn-brand-accent:hover { background: #0d9488; }
+
+        .btn-brand-primary { background: var(--brand-primary); color: white; }
+        .btn-brand-primary:hover { background: #002d47; }
+
+        .btn-brand-danger  { background: var(--brand-danger); color: white; }
+        .btn-brand-danger:hover { background: #be123c; }
+
+        .btn-brand-muted   { background: #e2e8f0; color: var(--text-main); }
+        .btn-brand-muted:hover { background: #cbd5e1; }
+
+        /* ==========================================================================
+           RESPONSIVE VIEWPORT ENGINE
+           ========================================================================== */
+        @media(max-width: 1200px) {
+            .stats-matrix { grid-template-columns: repeat(2, 1fr); }
+            .workspace-grid { grid-template-columns: 1fr; }
+        }
+
+        @media(max-width: 992px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 2rem; }
+            .header-wrapper { flex-direction: column; align-items: stretch; }
+            .search-container { max-width: 100%; }
+        }
+
+        @media(max-width: 650px) {
+            .stats-matrix { grid-template-columns: 1fr; }
+            .info-distribution-grid { grid-template-columns: 1fr; }
+            .control-action-bar { flex-direction: column; align-items: stretch; }
+            .btn-action { width: 100%; }
+        }
+    </style>
 </head>
-
 <body>
 
-<nav>
+    <div class="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo-text">
+                Ethio Health
+                <span>Care Agency</span>
+            </div>
+        </div>
 
-    <div class="brand">
-        Ethio<span>Health</span>
+        <nav>
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Applicants</a>
+            <a href="#">Approved</a>
+            <a href="#">Messages</a>
+            <a href="/logout" class="logout">Logout</a>
+        </nav>
     </div>
 
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/logout">Logout</a>
-    </div>
+    <div class="main-content">
 
-</nav>
-
-<main class="dashboard-page">
-
-    <!-- HEADER -->
-
-    <section class="dashboard-header">
-
-        <h1>CEO Dashboard</h1>
-
-        <p>
-            Manage healthcare applicants, approve candidates,
-            send verification emails, and organize your medical team professionally.
-        </p>
-
-        <div class="dashboard-search">
-
-            <form method="GET" action="{{ url_for('dashboard') }}">
-
-                <input
-                type="text"
-                name="search"
-                placeholder="Search applicants..."
-                value="{{ search_query or '' }}">
-
-                <button type="submit">
-                    🔍 Search
-                </button>
-
-            </form>
-
-        </div>
-
-    </section>
-
-    <!-- SUMMARY -->
-
-    <section class="dashboard-summary">
-
-        <div class="summary-card">
-            <h3>Total Applications</h3>
-            <strong>{{ applications|length }}</strong>
-        </div>
-
-        <div class="summary-card">
-            <h3>Approved</h3>
-            <strong>{{ applications|selectattr('status','equalto','approved')|list|length }}</strong>
-        </div>
-
-        <div class="summary-card">
-            <h3>Pending</h3>
-            <strong>{{ applications|selectattr('status','equalto','pending')|list|length }}</strong>
-        </div>
-
-        <div class="summary-card">
-            <h3>Verified</h3>
-            <strong>{{ applications|selectattr('verified')|list|length }}</strong>
-        </div>
-
-    </section>
-
-    <!-- APPLICATIONS -->
-
-    <section class="applications-list">
-
-        {% for application in applications|sort(attribute='submitted_at', reverse=True) %}
-
-        <article class="app-card">
-
-            <div class="app-top">
-
-                <div>
-
-                    <h2>{{ application.name }}</h2>
-
-                    <span class="status-pill status-{{ application.status|default('pending') }}">
-                        {{ application.status }}
-                    </span>
-
-                </div>
-
-                <div class="phone-box">
-                    📱 {{ application.phone }}
-                </div>
-
+        <div class="header-wrapper">
+            <div class="header-title">
+                <h1>CEO Control Panel</h1>
+                <p>Manage healthcare talent acquisition, credential verification, and operations.</p>
             </div>
 
-            <!-- SMALL CLEAN SQUARES -->
+            <div class="search-container">
+                <form method="GET" action="{{ url_for('dashboard') }}" class="search-form">
+                    <input type="text" name="search" placeholder="Search professionals by name or role...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </div>
 
-            <div class="info-grid">
+        <div class="stats-matrix">
+            <div class="stat-card">
+                <h3>Total Registrations</h3>
+                <strong>{{ applications|length }}</strong>
+            </div>
+            <div class="stat-card approved">
+                <h3>Approved Personnel</h3>
+                <strong>{{ applications|selectattr('status','equalto','approved')|list|length }}</strong>
+            </div>
+            <div class="stat-card pending">
+                <h3>Awaiting Review</h3>
+                <strong>{{ applications|selectattr('status','equalto','pending')|list|length }}</strong>
+            </div>
+            <div class="stat-card verified">
+                <h3>Verified Credentials</h3>
+                <strong>{{ applications|selectattr('verified')|list|length }}</strong>
+            </div>
+        </div>
 
-                <div class="info-box">
-                    <h4>Role</h4>
+        {% for application in applications %}
+        <div class="applicant-card">
+            
+            <div class="card-profile-header">
+                <div class="profile-identity">
+                    <div class="profile-avatar-placeholder">
+                        {{ application.name[:1] }}
+                    </div>
+                    <div class="applicant-name">{{ application.name }}</div>
+                </div>
+                <div class="status-badge {{ application.status }}">{{ application.status }}</div>
+            </div>
+
+            <div class="info-distribution-grid">
+                <div class="data-box">
+                    <h4>Professional Position</h4>
                     <p>{{ application.role }}</p>
                 </div>
-
-                <div class="info-box">
-                    <h4>Email</h4>
+                <div class="data-box">
+                    <h4>Direct Phone Contact</h4>
+                    <p>{{ application.phone }}</p>
+                </div>
+                <div class="data-box">
+                    <h4>Email Address</h4>
                     <p>{{ application.email }}</p>
                 </div>
-
-                <div class="info-box">
-                    <h4>Experience</h4>
-                    <p>{{ application.experience }}</p>
-                </div>
-
-                <div class="info-box">
-                    <h4>Qualifications</h4>
-                    <p>{{ application.qualifications or 'Not specified' }}</p>
-                </div>
-
-                <div class="info-box">
-                    <h4>About Applicant</h4>
-                    <p>{{ application.about }}</p>
-                </div>
-
-                <div class="info-box">
-                    <h4>CV</h4>
-
-                    {% if application.cv %}
-
-                    <p>
-                        <a href="{{ url_for('uploaded_file', filename=application.cv) }}">
-                            📄 Download CV
-                        </a>
-                    </p>
-
-                    {% else %}
-
-                    <p>No CV Uploaded</p>
-
-                    {% endif %}
-                </div>
-
             </div>
 
-            <!-- ACTIONS -->
+            <form method="POST" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="unified-action-workspace">
+                
+                <div class="workspace-grid">
+                    <div class="input-group">
+                        <label>Assign Corporate Email Address</label>
+                        <input type="email" name="account_email" placeholder="e.g. name@ethiohealthcare.com" value="{{ application.assigned_email or '' }}">
+                    </div>
+                    <div class="input-group">
+                        <label>Executive Internal / External Message</label>
+                        <textarea name="ceo_message" placeholder="Type a message or instruction to send to this applicant..."></textarea>
+                    </div>
+                </div>
 
-            <div class="action-grid">
-
-                <!-- EMAIL -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="assign_email">
-
-                    <strong>Assign Email</strong>
-
-                    <input
-                    type="email"
-                    name="account_email"
-                    placeholder="employee@email.com"
-                    value="{{ application.account_email }}">
-
-                    <button class="btn btn-dark">
-                        Save Email
-                    </button>
-
-                </form>
-
-                <!-- MESSAGE -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="send_message">
-
-                    <strong>Send Message</strong>
-
-                    <textarea
-                    name="ceo_message"
-                    placeholder="Write message here..."></textarea>
-
-                    <button class="btn btn-primary">
-                        Send Message
-                    </button>
-
-                </form>
-
-                <!-- VERIFY -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="send_verification">
-
-                    <strong>Email Verification</strong>
-
-                    <button class="btn btn-primary">
-                        Send Verification
-                    </button>
-
-                </form>
-
-                <!-- ACCEPT -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="accept">
-
-                    <strong>Approve Applicant</strong>
-
-                    <button class="btn btn-success">
-                        Accept Applicant
-                    </button>
-
-                </form>
-
-                <!-- REJECT -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="reject">
-
-                    <strong>Reject Applicant</strong>
-
-                    <button class="btn btn-danger">
-                        Reject Applicant
-                    </button>
-
-                </form>
-
-                <!-- DELETE -->
-
-                <form
-                class="action-box"
-                method="POST"
-                action="{{ url_for('dashboard_action', app_id=application.id) }}">
-
-                    <input type="hidden" name="action" value="delete">
-
-                    <strong>Delete Applicant</strong>
-
-                    <button class="btn btn-danger">
-                        Delete Applicant
-                    </button>
-
-                </form>
-
-            </div>
-
-            <!-- MESSAGE HISTORY -->
-
-            {% if application.messages %}
-
-            <div class="message-thread">
-
-                <h3>💬 Message History</h3>
-
-                <ul>
-
-                    {% for note in application.messages %}
-
-                    <li>
-                        <strong>{{ note.from }}:</strong>
-                        {{ note.message }}
-                    </li>
-
-                    {% endfor %}
-
-                </ul>
-
-            </div>
-
-            {% endif %}
-
-        </article>
-
+                <div class="control-action-bar">
+                    <button type="submit" name="action" value="assign_email" class="btn-action btn-brand-muted">Save Email</button>
+                    <button type="submit" name="action" value="send_message" class="btn-action btn-brand-primary">Send Message</button>
+                    <button type="submit" name="action" value="send_verification" class="btn-action btn-brand-muted">Send Verification</button>
+                    <button type="submit" name="action" value="accept" class="btn-action btn-brand-accent">Approve Candidate</button>
+                    <button type="submit" name="action" value="reject" class="btn-action btn-brand-danger">Reject</button>
+                    <button type="submit" name="action" value="delete" class="btn-action btn-brand-danger" style="background:#ef4444;">Delete</button>
+                </div>
+                
+            </form>
+        </div>
         {% endfor %}
 
-    </section>
-
-</main>
+    </div>
 
 </body>
 </html>
-```
