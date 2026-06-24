@@ -97,35 +97,33 @@ def delete_application(app_id):
 
 
 def send_email(to_address, subject, body):
-
+    """Send email via SMTP or log to console"""
     if SMTP_HOST and SMTP_USER and SMTP_PASS:
         try:
             message = EmailMessage()
-
             message["Subject"] = subject
             message["From"] = EMAIL_FROM
             message["To"] = to_address
-
             message.set_content(body)
-
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
                 smtp.starttls()
                 smtp.login(SMTP_USER, SMTP_PASS)
                 smtp.send_message(message)
-
+            print(f"✓ EMAIL SENT: {subject} → {to_address}")
             return True, "Email sent successfully."
-
         except Exception as exc:
+            print(f"✗ EMAIL FAILED: {str(exc)}")
             return False, f"Email error: {str(exc)}"
-
     else:
-        print("\n===== EMAIL LOG =====")
-        print("TO:", to_address)
-        print("SUBJECT:", subject)
+        print("\n" + "="*70)
+        print("📧 EMAIL CONSOLE FALLBACK (SMTP not configured on this server)")
+        print("="*70)
+        print(f"TO: {to_address}")
+        print(f"SUBJECT: {subject}")
+        print("-"*70)
         print(body)
-        print("=====================\n")
-
-        return True, "Email logged to console."
+        print("="*70 + "\n")
+        return True, "Email logged to console (SMTP not configured)."
 
 
 # --------------------------
@@ -426,19 +424,45 @@ Ethio Health Care
         update_application(application)
 
         verification_link = f"{BASE_URL}/verify/{application['verification_token']}"
-        subject = "Verify Your Ethio Health Care Application"
+        subject = "🔒 Verify Your Ethio Health Care Application"
+        
         body = f"""
 Hello {application['name']},
 
-Please verify your application by clicking the link below:
+Thank you for applying to Ethio Health Care!
+
+To complete your registration and verify your application, please click the link below:
+
+VERIFICATION LINK:
 {verification_link}
 
-Thank you,
-Ethio Health Care
+This link will confirm your email address and move your application forward in our review process.
+
+Important: This link will expire in 30 days. If it has expired, please contact us at support@ethiohealthcare.com
+
+After verification, you can expect to hear from us within 3-5 business days.
+
+---
+
+Position Applied For: {application['role']}
+Application Date: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(application['submitted_at']))}
+
+If you have any questions, please don't hesitate to reach out.
+
+Best Regards,
+The Ethio Health Care Team
+support@ethiohealthcare.com
 """
+        
         recipient = application.get("account_email") or application.get("email")
-        send_email(recipient, subject, body)
-        flash("Verification email sent.")
+        success, msg = send_email(recipient, subject, body)
+        
+        if success:
+            flash(f"✓ Verification email sent to {recipient}")
+        else:
+            flash(f"⚠ Verification link generated (Email: {msg})")
+            # Log the verification link for admin to copy/share if email fails
+            print(f"\n🔗 VERIFICATION LINK FOR {application['name']}: {verification_link}\n")
 
     # ACCEPT
     elif action == "accept":

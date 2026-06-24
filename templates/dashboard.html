@@ -316,7 +316,49 @@
             font-size: 0.85rem;
         }
 
-        .no-results {
+        .verification-info {
+            background: rgba(6, 182, 212, 0.08);
+            padding: 1rem;
+            border-radius: 0.8rem;
+            border-left: 3px solid #06b6d4;
+            font-size: 0.9rem;
+            color: #0c4a6e;
+        }
+
+        .verification-info strong {
+            color: #0891b2;
+            display: block;
+            margin-bottom: 0.6rem;
+        }
+
+        .verification-link {
+            background: #fff;
+            padding: 0.8rem;
+            border-radius: 0.6rem;
+            border: 1px dashed #06b6d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            margin-top: 0.6rem;
+            color: #0c4a6e;
+        }
+
+        .copy-btn {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: #06b6d4;
+            color: white;
+            border: none;
+            border-radius: 0.4rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 0.6rem;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: #0891b2;
+        }
             grid-column: 1 / -1;
             text-align: center;
             padding: 3rem 2rem;
@@ -453,6 +495,15 @@
                 </div>
                 {% endif %}
 
+                {% if application.verification_token %}
+                <div class="verification-info">
+                    <strong>🔗 Verification Link</strong>
+                    Status: <strong>{{ application.status|replace('_', ' ')|capitalize }}</strong>
+                    <div class="verification-link">{{ url_for('verify_email', token=application.verification_token, _external=True) }}</div>
+                    <button class="copy-btn" onclick="copyToClipboard(this)">Copy Link</button>
+                </div>
+                {% endif %}
+
                 <div class="app-actions">
                     <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="action-form">
                         <input type="hidden" name="action" value="assign_email">
@@ -526,6 +577,18 @@
                 const msg = document.getElementById('noResults');
                 if (msg) msg.remove();
             }
+        }
+
+        function copyToClipboard(button) {
+            const linkDiv = button.previousElementSibling;
+            const text = linkDiv.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
         }
     </script>
 </body>
