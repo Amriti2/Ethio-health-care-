@@ -1,570 +1,532 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEO Dashboard | Ethio Health Care</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <title>CEO Dashboard - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        /* ==========================================================================
-           ETHIO HEALTH CARE BRAND THEME VARIABLES
-           ========================================================================== */
-        :root {
-            --brand-primary: #003b5c;    /* Deep Teal from poster logo/header */
-            --brand-secondary: #008080;  /* Muted Teal */
-            --brand-accent: #00a896;     /* Bright Seafoam Green for positive actions */
-            --brand-danger: #d90429;     /* Deep Red for rejections/deletions */
-            --brand-warning: #f59e0b;    /* Amber for pending status */
-            --brand-info: #0284c7;       /* Sky Blue for verification */
-            
-            --bg-main: #f4f7f9;          /* Ultra-light clean gray canvas */
-            --bg-sidebar: #ffffff;       /* Crisp white for administrative structural menus */
-            --card-bg: #ffffff;          /* Clean white for content elements */
-            
-            --text-main: #1e293b;        /* Deep slate for high legibility */
-            --text-muted: #64748b;       /* Muted gray for subtitles/secondary text */
-            --border-color: #e2e8f0;     /* Soft dividing lines */
-        }
-
-        /* ==========================================================================
-           BASE STYLES & RESET
-           ========================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* ==========================================================================
-           SIDEBAR COMPONENT
-           ========================================================================== */
-        .sidebar {
-            width: 280px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 2.5rem 1.5rem;
-            position: fixed;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 4px 0 20px rgba(0, 59, 92, 0.03);
-            z-index: 100;
-        }
-
-        .brand-container {
-            margin-bottom: 3rem;
-            padding-left: 0.5rem;
-        }
-
-        .brand-logo-text {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--brand-primary);
-            letter-spacing: -0.5px;
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .brand-logo-text span {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--brand-accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 0.2rem;
-        }
-
-        .sidebar nav {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 0.9rem 1rem;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-
-        .sidebar a:hover, .sidebar a.active {
-            background: rgba(0, 59, 92, 0.05);
-            color: var(--brand-primary);
-        }
-
-        .sidebar a.logout {
-            margin-top: auto;
-            color: #ef4444;
-        }
+        .dashboard-page { max-width: 1400px; margin: 0 auto; padding: 3rem 2rem 5rem; }
         
-        .sidebar a.logout:hover {
-            background: #fef2f2;
-            color: #b91c1c;
-        }
-
-        /* ==========================================================================
-           MAIN CONTENT AREA
-           ========================================================================== */
-        .main-content {
-            margin-left: 280px;
-            padding: 2.5rem 3rem;
-            width: 100%;
-            max-width: 1600px;
-        }
-
-        /* HEADER & SEARCH ACTIONS */
-        .header-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2.5rem;
-            gap: 2rem;
-        }
-
-        .header-title h1 {
-            font-size: 2.24rem;
-            font-weight: 800;
-            color: var(--brand-primary);
-            letter-spacing: -0.5px;
-        }
-
-        .header-title p {
-            color: var(--text-muted);
-            margin-top: 0.4rem;
-            font-size: 1rem;
-        }
-
-        .search-container {
-            flex: 1;
-            max-width: 450px;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 0.75rem;
-            width: 100%;
-        }
-
-        .search-form input {
-            flex: 1;
-            padding: 0.85rem 1.2rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: #ffffff;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-            transition: border-color 0.2s;
-        }
-
-        .search-form input:focus {
-            outline: none;
-            border-color: var(--brand-primary);
-        }
-
-        .search-form button {
-            padding: 0.85rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            background: var(--brand-primary);
-            color: #ffffff;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .search-form button:hover {
-            opacity: 0.95;
-        }
-
-        /* ==========================================================================
-           EXECUTIVE STATS OVERVIEW MATRIX
-           ========================================================================== */
-        .stats-matrix {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
+        .dashboard-hero {
             margin-bottom: 3rem;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2rem;
+            align-items: start;
         }
 
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
-            position: relative;
-            overflow: hidden;
+        .hero-content h1 {
+            font-size: 2.6rem;
+            color: #0b4977;
+            margin-bottom: 1rem;
+            font-weight: 900;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--brand-primary);
+        .hero-content p {
+            color: #334e68;
+            font-size: 1.1rem;
+            line-height: 1.8;
         }
 
-        .stat-card.approved::before { background: var(--brand-accent); }
-        .stat-card.pending::before { background: var(--brand-warning); }
-        .stat-card.verified::before { background: var(--brand-info); }
-
-        .stat-card h3 {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card strong {
-            font-size: 2.2rem;
-            font-weight: 800;
-            display: block;
-            margin-top: 0.5rem;
-            color: var(--brand-primary);
-        }
-
-        /* ==========================================================================
-           ENHANCED APPLICANT PROFILE SYSTEM (CARDS)
-           ========================================================================== */
-        .applicant-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 59, 92, 0.03);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .applicant-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 59, 92, 0.05);
-        }
-
-        /* Card Top Profile Identity */
-        .card-profile-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .profile-identity {
-            display: flex;
-            align-items: center;
+        .hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
 
-        .profile-avatar-placeholder {
-            width: 48px;
-            height: 48px;
-            background: rgba(0, 59, 92, 0.1);
-            color: var(--brand-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .applicant-name {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: var(--brand-primary);
-        }
-
-        /* Unified System Badges */
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 0.4rem 1rem;
-            border-radius: 999px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .pending  { background: #fffbeb; color: var(--brand-warning); border: 1px solid #fef3c7; }
-        .approved { background: #f0fdf4; color: var(--brand-accent); border: 1px solid #dcfce7; }
-        .rejected { background: #fef2f2; color: var(--brand-danger); border: 1px solid #fee2e2; }
-        .verified { background: #f0f9ff; color: var(--brand-info); border: 1px solid #e0f2fe; }
-
-        /* Information Distribution Grid */
-        .info-distribution-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
-            margin-bottom: 1.75rem;
-        }
-
-        .data-box {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-        }
-
-        .data-box h4 {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-        }
-
-        .data-box p {
-            margin-top: 0.35rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        /* Consolidated Unified Form Management Actions */
-        .unified-action-workspace {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+        .stat-box {
+            background: #fff;
             padding: 1.5rem;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(11, 73, 119, 0.12);
+            box-shadow: 0 8px 20px rgba(11, 73, 119, 0.06);
+            text-align: center;
+            transition: all 0.3s ease;
         }
 
-        .workspace-grid {
+        .stat-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(11, 73, 119, 0.1);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #627d98;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            color: #0b4977;
+            font-weight: 900;
+        }
+
+        .stat-box.pending .stat-number { color: #f59e0b; }
+        .stat-box.approved .stat-number { color: #10b981; }
+        .stat-box.verified .stat-number { color: #06b6d4; }
+
+        .flashes {
             display: grid;
-            grid-template-columns: 1.5fr 2fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 1rem;
+            padding: 1.2rem 1.5rem;
+            color: #047857;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+        }
+
+        .dashboard-filters {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(11, 73, 119, 0.12);
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 20px rgba(11, 73, 119, 0.06);
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .search-box, .filter-select {
+            padding: 0.9rem 1.2rem;
+            border: 1px solid rgba(11, 73, 119, 0.16);
+            border-radius: 0.8rem;
+            background: #fff;
+            font-size: 0.95rem;
+            color: #102a43;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus, .filter-select:focus {
+            outline: none;
+            border-color: #0b4977;
+            box-shadow: 0 0 0 3px rgba(11, 73, 119, 0.1);
+        }
+
+        .applications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 1.25rem;
         }
 
-        .input-group {
+        .app-box {
+            background: #fff;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(11, 73, 119, 0.12);
+            box-shadow: 0 8px 20px rgba(11, 73, 119, 0.06);
+            padding: 1.8rem;
+            transition: all 0.3s ease;
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .app-box:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(11, 73, 119, 0.12);
+            border-color: rgba(11, 73, 119, 0.2);
+        }
+
+        .app-header {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(11, 73, 119, 0.08);
         }
 
-        .input-group label {
+        .app-info h3 {
+            font-size: 1.3rem;
+            color: #0b4977;
+            margin-bottom: 0.4rem;
+            font-weight: 900;
+        }
+
+        .app-role {
+            font-size: 0.9rem;
+            color: #627d98;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
             font-size: 0.8rem;
             font-weight: 700;
-            color: var(--brand-primary);
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background: #ffffff;
-            color: var(--text-main);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: border-color 0.2s;
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+        .status-approved { background: rgba(16, 185, 129, 0.15); color: #065f46; }
+        .status-verification-sent { background: rgba(2, 132, 199, 0.15); color: #0c4a6e; }
+        .status-verified { background: rgba(6, 182, 212, 0.15); color: #164e63; }
+
+        .app-details {
+            display: grid;
+            gap: 0.8rem;
         }
 
-        .input-group textarea {
-            resize: vertical;
-            height: 42px;
-            min-height: 42px;
-        }
-
-        .input-group input:focus,
-        .input-group textarea:focus {
-            outline: none;
-            border-color: var(--brand-primary);
-        }
-
-        /* Action Executable Control Bar */
-        .control-action-bar {
+        .detail-row {
             display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 0.75rem;
-            border-top: 1px solid var(--border-color);
-            padding-top: 1.25rem;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.95rem;
         }
 
-        .btn-action {
-            padding: 0.7rem 1.25rem;
-            border: none;
-            border-radius: 10px;
+        .label {
             font-weight: 700;
-            font-size: 0.88rem;
+            color: #0b4977;
+            min-width: 90px;
+        }
+
+        .value {
+            color: #334e68;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .assigned-email {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 1rem;
+            border-radius: 0.8rem;
+            border-left: 3px solid #10b981;
+            font-size: 0.95rem;
+            color: #047857;
+        }
+
+        .assigned-email strong {
+            color: #065f46;
+        }
+
+        .app-actions {
+            display: grid;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(11, 73, 119, 0.08);
+        }
+
+        .action-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.7rem;
+            align-items: flex-end;
+        }
+
+        .action-form input[type="email"],
+        .action-form textarea {
+            padding: 0.7rem 0.9rem;
+            border: 1px solid rgba(11, 73, 119, 0.16);
+            border-radius: 0.6rem;
+            font-size: 0.85rem;
+            background: #fff;
+            color: #102a43;
+        }
+
+        .action-form input[type="email"]:focus,
+        .action-form textarea:focus {
+            outline: none;
+            border-color: #0b4977;
+            box-shadow: 0 0 0 2px rgba(11, 73, 119, 0.1);
+        }
+
+        .action-form textarea {
+            grid-column: 1 / -1;
+            resize: none;
+            min-height: 50px;
+        }
+
+        .btn-small {
+            padding: 0.7rem 1.2rem;
+            background: #0b4977;
+            color: #fff;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
-        /* Specific Color Variations to preserve hierarchy */
-        .btn-brand-accent  { background: var(--brand-accent); color: white; }
-        .btn-brand-accent:hover { background: #0d9488; }
-
-        .btn-brand-primary { background: var(--brand-primary); color: white; }
-        .btn-brand-primary:hover { background: #002d47; }
-
-        .btn-brand-danger  { background: var(--brand-danger); color: white; }
-        .btn-brand-danger:hover { background: #be123c; }
-
-        .btn-brand-muted   { background: #e2e8f0; color: var(--text-main); }
-        .btn-brand-muted:hover { background: #cbd5e1; }
-
-        /* ==========================================================================
-           RESPONSIVE VIEWPORT ENGINE
-           ========================================================================== */
-        @media(max-width: 1200px) {
-            .stats-matrix { grid-template-columns: repeat(2, 1fr); }
-            .workspace-grid { grid-template-columns: 1fr; }
+        .btn-small:hover {
+            background: #093d60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(11, 73, 119, 0.2);
         }
 
-        @media(max-width: 992px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0; padding: 2rem; }
-            .header-wrapper { flex-direction: column; align-items: stretch; }
-            .search-container { max-width: 100%; }
+        .btn-verify {
+            background: #06b6d4;
         }
 
-        @media(max-width: 650px) {
-            .stats-matrix { grid-template-columns: 1fr; }
-            .info-distribution-grid { grid-template-columns: 1fr; }
-            .control-action-bar { flex-direction: column; align-items: stretch; }
-            .btn-action { width: 100%; }
+        .btn-verify:hover {
+            background: #0891b2;
+        }
+
+        .btn-message {
+            background: #10b981;
+        }
+
+        .btn-message:hover {
+            background: #059669;
+        }
+
+        .message-log {
+            background: rgba(11, 73, 119, 0.05);
+            padding: 1rem;
+            border-radius: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .message-log strong {
+            display: block;
+            color: #0b4977;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .message-log ul {
+            list-style: none;
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .message-log li {
+            padding: 0.7rem;
+            background: #fff;
+            border-radius: 0.6rem;
+            border-left: 3px solid #0b4977;
+            color: #334e68;
+            font-size: 0.85rem;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #627d98;
+            font-size: 1.1rem;
+            background: rgba(11, 73, 119, 0.05);
+            border-radius: 1.2rem;
+            border: 1px dashed rgba(11, 73, 119, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .filter-group {
+                grid-template-columns: 1fr;
+            }
+
+            .applications-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .action-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-
-    <div class="sidebar">
-        <div class="brand-container">
-            <div class="brand-logo-text">
-                Ethio Health
-                <span>Care Agency</span>
-            </div>
+    <nav>
+        <div class="brand">Ethio<span>Health</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/logout">Logout</a>
         </div>
+    </nav>
 
-        <nav>
-            <a href="#" class="active">Dashboard</a>
-            <a href="#">Applicants</a>
-            <a href="#">Approved</a>
-            <a href="#">Messages</a>
-            <a href="/logout" class="logout">Logout</a>
-        </nav>
-    </div>
+    <main class="dashboard-page">
+        <section class="dashboard-hero">
+            <div class="hero-content">
+                <span class="eyebrow">Welcome Back</span>
+                <h1>CEO Dashboard</h1>
+                <p>Review applications, manage candidates, and grow your Ethio Health Care team. Every applicant brings talent and passion.</p>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Total Applications</span>
+                    <strong class="stat-number">{{ applications|length }}</strong>
+                </div>
+                <div class="stat-box pending">
+                    <span class="stat-label">Pending Review</span>
+                    <strong class="stat-number">{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</strong>
+                </div>
+                <div class="stat-box approved">
+                    <span class="stat-label">Approved</span>
+                    <strong class="stat-number">{{ applications|selectattr('status', 'equalto', 'approved')|list|length }}</strong>
+                </div>
+                <div class="stat-box verified">
+                    <span class="stat-label">Verified</span>
+                    <strong class="stat-number">{{ applications|selectattr('verified')|list|length }}</strong>
+                </div>
+            </div>
+        </section>
 
-    <div class="main-content">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <section class="flashes">
+            {% for message in messages %}
+            <div class="flash-success">✓ {{ message }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
 
-        <div class="header-wrapper">
-            <div class="header-title">
-                <h1>CEO Control Panel</h1>
-                <p>Manage healthcare talent acquisition, credential verification, and operations.</p>
+        <section class="dashboard-filters">
+            <div class="filter-group">
+                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by name or email..." onkeyup="filterApplications()">
+                <select id="statusFilter" class="filter-select" onchange="filterApplications()">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="verification_sent">Verification Sent</option>
+                    <option value="verified">Verified</option>
+                </select>
+                <select id="roleFilter" class="filter-select" onchange="filterApplications()">
+                    <option value="">All Roles</option>
+                    <option value="Nurse">Nurse</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Midwife">Midwife</option>
+                    <option value="Care Giver">Care Giver</option>
+                </select>
             </div>
+        </section>
 
-            <div class="search-container">
-                <form method="GET" action="{{ url_for('dashboard') }}" class="search-form">
-                    <input type="text" name="search" placeholder="Search professionals by name or role...">
-                    <button type="submit">Search</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="stats-matrix">
-            <div class="stat-card">
-                <h3>Total Registrations</h3>
-                <strong>{{ applications|length }}</strong>
-            </div>
-            <div class="stat-card approved">
-                <h3>Approved Personnel</h3>
-                <strong>{{ applications|selectattr('status','equalto','approved')|list|length }}</strong>
-            </div>
-            <div class="stat-card pending">
-                <h3>Awaiting Review</h3>
-                <strong>{{ applications|selectattr('status','equalto','pending')|list|length }}</strong>
-            </div>
-            <div class="stat-card verified">
-                <h3>Verified Credentials</h3>
-                <strong>{{ applications|selectattr('verified')|list|length }}</strong>
-            </div>
-        </div>
-
-        {% for application in applications %}
-        <div class="applicant-card">
-            
-            <div class="card-profile-header">
-                <div class="profile-identity">
-                    <div class="profile-avatar-placeholder">
-                        {{ application.name[:1] }}
+        <section class="applications-grid" id="applicationsContainer">
+            {% for application in applications|sort(attribute='submitted_at', reverse=True) %}
+            <article class="app-box app-{{ application.status|lower|replace('_', '-') }}" data-name="{{ application.name|lower }}" data-email="{{ application.email|lower }}" data-status="{{ application.status }}" data-role="{{ application.role }}">
+                <div class="app-header">
+                    <div class="app-info">
+                        <h3>{{ application.name }}</h3>
+                        <p class="app-role">{{ application.role }}</p>
                     </div>
-                    <div class="applicant-name">{{ application.name }}</div>
+                    <span class="status-badge status-{{ application.status|lower|replace('_', '-') }}">{{ application.status|replace('_', ' ')|capitalize }}</span>
                 </div>
-                <div class="status-badge {{ application.status }}">{{ application.status }}</div>
-            </div>
 
-            <div class="info-distribution-grid">
-                <div class="data-box">
-                    <h4>Professional Position</h4>
-                    <p>{{ application.role }}</p>
-                </div>
-                <div class="data-box">
-                    <h4>Direct Phone Contact</h4>
-                    <p>{{ application.phone }}</p>
-                </div>
-                <div class="data-box">
-                    <h4>Email Address</h4>
-                    <p>{{ application.email }}</p>
-                </div>
-            </div>
-
-            <form method="POST" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="unified-action-workspace">
-                
-                <div class="workspace-grid">
-                    <div class="input-group">
-                        <label>Assign Corporate Email Address</label>
-                        <input type="email" name="account_email" placeholder="e.g. name@ethiohealthcare.com" value="{{ application.assigned_email or '' }}">
+                <div class="app-details">
+                    <div class="detail-row">
+                        <span class="label">Email:</span>
+                        <span class="value">{{ application.email }}</span>
                     </div>
-                    <div class="input-group">
-                        <label>Executive Internal / External Message</label>
-                        <textarea name="ceo_message" placeholder="Type a message or instruction to send to this applicant..."></textarea>
+                    <div class="detail-row">
+                        <span class="label">Phone:</span>
+                        <span class="value">{{ application.phone }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Experience:</span>
+                        <span class="value">{{ application.experience[:80] }}...</span>
                     </div>
                 </div>
 
-                <div class="control-action-bar">
-                    <button type="submit" name="action" value="assign_email" class="btn-action btn-brand-muted">Save Email</button>
-                    <button type="submit" name="action" value="send_message" class="btn-action btn-brand-primary">Send Message</button>
-                    <button type="submit" name="action" value="send_verification" class="btn-action btn-brand-muted">Send Verification</button>
-                    <button type="submit" name="action" value="accept" class="btn-action btn-brand-accent">Approve Candidate</button>
-                    <button type="submit" name="action" value="reject" class="btn-action btn-brand-danger">Reject</button>
-                    <button type="submit" name="action" value="delete" class="btn-action btn-brand-danger" style="background:#ef4444;">Delete</button>
+                {% if application.account_email %}
+                <div class="assigned-email">
+                    <strong>✓ Account Email:</strong> {{ application.account_email }}
                 </div>
-                
-            </form>
-        </div>
-        {% endfor %}
+                {% endif %}
 
-    </div>
+                <div class="app-actions">
+                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="action-form">
+                        <input type="hidden" name="action" value="assign_email">
+                        <input type="email" name="account_email" placeholder="Assign email" value="{{ application.account_email }}" required>
+                        <button type="submit" class="btn-small">✓ Save</button>
+                    </form>
 
+                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="action-form">
+                        <input type="hidden" name="action" value="send_verification">
+                        <button type="submit" class="btn-small btn-verify">📧 Verify Link</button>
+                    </form>
+
+                    <form method="post" action="{{ url_for('dashboard_action', app_id=application.id) }}" class="action-form">
+                        <input type="hidden" name="action" value="send_message">
+                        <textarea name="ceo_message" placeholder="Send message..." maxlength="200" required></textarea>
+                        <button type="submit" class="btn-small btn-message">💬 Send</button>
+                    </form>
+                </div>
+
+                {% if application.messages %}
+                <div class="message-log">
+                    <strong>📋 Communications ({{ application.messages|length }})</strong>
+                    <ul>
+                        {% for note in application.messages %}
+                        <li><strong>{{ note.from }}:</strong> {{ note.message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+
+    <script>
+        function filterApplications() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const apps = document.querySelectorAll('.app-box');
+            let visible = 0;
+
+            apps.forEach(app => {
+                const name = app.getAttribute('data-name');
+                const email = app.getAttribute('data-email');
+                const status = app.getAttribute('data-status').toLowerCase();
+                const role = app.getAttribute('data-role');
+
+                const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+                const matchesStatus = !statusFilter || status === statusFilter;
+                const matchesRole = !roleFilter || role === roleFilter;
+
+                if (matchesSearch && matchesStatus && matchesRole) {
+                    app.style.display = '';
+                    visible++;
+                } else {
+                    app.style.display = 'none';
+                }
+            });
+
+            const container = document.getElementById('applicationsContainer');
+            if (visible === 0) {
+                if (!document.getElementById('noResults')) {
+                    const msg = document.createElement('div');
+                    msg.id = 'noResults';
+                    msg.className = 'no-results';
+                    msg.textContent = '🔍 No applications match your filters. Try adjusting your search!';
+                    container.appendChild(msg);
+                }
+            } else {
+                const msg = document.getElementById('noResults');
+                if (msg) msg.remove();
+            }
+        }
+    </script>
 </body>
 </html>
