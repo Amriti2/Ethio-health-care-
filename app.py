@@ -65,6 +65,16 @@ def save_applications(applications):
         json.dump(applications, file, indent=2)
 
 
+def format_datetime(value):
+    try:
+        return time.strftime("%Y-%m-%d %H:%M", time.localtime(int(value)))
+    except Exception:
+        return "Unknown"
+
+
+app.jinja_env.filters["datetimeformat"] = format_datetime
+
+
 def find_application(app_id):
     applications = load_applications()
 
@@ -347,10 +357,13 @@ def uploaded_file(filename):
     if not session.get("admin"):
         return redirect(url_for("login"))
 
+    download = request.args.get("download", "1")
+    as_attachment = download == "1"
+
     return send_from_directory(
         app.config["UPLOAD_FOLDER"],
         filename,
-        as_attachment=True
+        as_attachment=as_attachment
     )
 
 
@@ -423,7 +436,7 @@ Ethio Health Care
         application["status"] = "verification_sent"
         update_application(application)
 
-        verification_link = f"{BASE_URL}/verify/{application['verification_token']}"
+        verification_link = url_for("verify_email", token=application["verification_token"], _external=True)
         subject = "🔒 Verify Your Ethio Health Care Application"
         
         body = f"""
