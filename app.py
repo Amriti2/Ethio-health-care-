@@ -72,7 +72,7 @@ LOGO_FOLDER = os.path.join(os.path.dirname(__file__), "static", "logos")
 os.makedirs(LOGO_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 15 * 1024 * 1024  # 15MB max upload size for slower connections
 
 SMTP_HOST = os.environ.get("SMTP_HOST", "")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
@@ -1247,6 +1247,8 @@ def apply_to_job(job_id):
                     error = "Please upload your CV"
                 elif not allowed_file(cv_file.filename):
                     error = "Only PDF files are allowed"
+                elif cv_file.content_length and cv_file.content_length > 10 * 1024 * 1024:
+                    error = "CV file is too large (max 10MB). Please compress your PDF and try again."
                 else:
                     safe_name = secure_filename(cv_file.filename)
                     unique_filename = f"{int(time.time())}_{safe_name}"

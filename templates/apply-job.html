@@ -189,6 +189,39 @@
             text-decoration: underline;
         }
 
+        .upload-progress {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
         @media (max-width: 768px) {
             .apply-container {
                 grid-template-columns: 1fr;
@@ -261,11 +294,18 @@
                         <div class="file-input-wrapper">
                             <label class="file-input-label" for="cv-file">
                                 📄 Click to upload or drag and drop
-                                <span style="font-size: 0.85rem;"> (PDF only)</span>
+                                <span style="font-size: 0.85rem;"> (PDF only, Max 10MB)</span>
                             </label>
                             <input type="file" id="cv-file" name="cv" accept=".pdf" required>
                             <div class="file-name" id="file-name"></div>
                         </div>
+                    </div>
+
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Uploading... <span id="percentText">0%</span></div>
                     </div>
 
                     <button type="submit" class="submit-btn">Submit Application</button>
@@ -335,19 +375,53 @@
     <script>
         const fileInput = document.getElementById('cv-file');
         const fileName = document.getElementById('file-name');
+        const form = document.querySelector('form');
+        const submitBtn = document.querySelector('.submit-btn');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const percentText = document.getElementById('percentText');
+        
+        // Max file size in bytes (10MB)
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
         
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                fileName.textContent = '✅ ' + e.target.files[0].name;
+                const file = e.target.files[0];
+                
+                // Check file size
+                if (file.size > MAX_FILE_SIZE) {
+                    fileName.textContent = '❌ File too large (max 10MB)';
+                    fileName.style.color = '#dc2626';
+                    fileInput.value = '';
+                    alert(`Your PDF is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Please compress it to under 10MB.`);
+                    return;
+                }
+                
+                // Check file type
+                if (file.type !== 'application/pdf') {
+                    fileName.textContent = '❌ Only PDF files allowed';
+                    fileName.style.color = '#dc2626';
+                    fileInput.value = '';
+                    alert('Please select a PDF file only.');
+                    return;
+                }
+                
+                fileName.textContent = '✅ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + 'KB)';
+                fileName.style.color = 'var(--primary-green)';
             }
         });
 
-        // Handle form submission with loading state
-        const form = document.querySelector('form');
-        const submitBtn = document.querySelector('.submit-btn');
-        
+        // Handle form submission with enhanced feedback
         if (form) {
             form.addEventListener('submit', function(e) {
+                // Validate file is selected
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    e.preventDefault();
+                    alert('Please select a CV file to continue.');
+                    return;
+                }
+
                 // Disable submit button and show loading state
                 submitBtn.disabled = true;
                 const originalText = submitBtn.textContent;
@@ -355,17 +429,35 @@
                 submitBtn.style.opacity = '0.6';
                 submitBtn.style.cursor = 'not-allowed';
                 
-                // Set a timeout to re-enable button after 30 seconds (safety net)
+                // Show upload progress
+                uploadProgress.classList.add('active');
+                
+                // Simulate upload progress (starts fast, slows down)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * (100 - progress) * 0.15;
+                    }
+                    progressFill.style.width = progress + '%';
+                    percentText.textContent = Math.floor(progress) + '%';
+                }, 200);
+                
+                // Set a timeout to re-enable button after 120 seconds (2 min - for slow mobile networks)
                 const timeoutId = setTimeout(() => {
+                    clearInterval(progressInterval);
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     submitBtn.style.opacity = '1';
                     submitBtn.style.cursor = 'pointer';
-                    alert('Application submission is taking longer than expected. Please check your connection and try again.');
-                }, 30000);
+                    uploadProgress.classList.remove('active');
+                    progressFill.style.width = '0%';
+                    percentText.textContent = '0%';
+                    alert('Application submission is taking longer than expected (over 2 minutes). This might be a connection issue. Please check your internet and try again, or try uploading a smaller PDF file.');
+                }, 120000); // 2 minutes for slow networks
                 
-                // If form submission succeeds, the page will redirect, so we don't need to clear timeout
-                // But if it fails, the server will send back the form which will re-enable the button
+                // If form submission succeeds, the page will redirect (clears timeout)
+                // Store timeout ID so we can check if form actually submitted
+                form.submitTimeoutId = timeoutId;
             });
         }
     </script>
