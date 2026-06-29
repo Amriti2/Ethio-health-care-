@@ -251,6 +251,196 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        /* Compact Card Styles */
+        .app-card-compact {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
+            border: 2px solid var(--border-light) !important;
+            padding: 1.5rem !important;
+            min-height: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .app-card-compact:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-green) !important;
+        }
+
+        .compact-card-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .compact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        .compact-header h3 {
+            font-size: 1.3rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        .compact-details {
+            display: grid;
+            gap: 0.5rem;
+            border-left: 3px solid var(--primary-green);
+            padding-left: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .compact-role {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .compact-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .compact-footer {
+            text-align: right;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .click-hint {
+            font-size: 0.8rem;
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 2rem auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .modal-header h2 {
+            color: var(--primary-blue);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            hover: background-color var(--border-light);
+        }
+
+        .modal-close:hover {
+            background-color: var(--border-light);
+            color: var(--primary-blue);
+        }
+
+        .modal-body {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        /* Make modal body sections scrollable */
+        .modal-body .section-group {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 1rem auto;
+                padding: 1.5rem;
+                max-height: 95vh;
+            }
+
+            .modal-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .modal-close {
+                align-self: flex-end;
+            }
+        }
     </style>
 </head>
 <body>
@@ -375,9 +565,51 @@
             </button>
         </div>
 
-        <!-- Applications Grid -->
+        <!-- Applications Grid - Compact Card View -->
         {% if applications %}
         <section class="applications-grid" id="applicationsGrid">
+            {% for app in applications %}
+            <article class="app-box app-card-compact" onclick="openApplicationModal('{{ app.id }}')">
+                <div class="compact-card-inner">
+                    <div class="compact-header">
+                        <h3>{{ app.name }}</h3>
+                        <span class="status-badge status-{{ app.status|replace('_', '-') }}">
+                            {% if app.status == 'pending' %}⏳{% elif app.status == 'approved' %}✅{% elif app.status == 'verification_sent' %}📧{% elif app.status == 'verified' %}🔒{% elif app.status == 'rejected' %}❌{% endif %}
+                            {{ app.status|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                    <div class="compact-details">
+                        <p class="compact-role">📋 {{ app.job_title }}</p>
+                        <p class="compact-meta">📅 {{ app.submitted_at | int | datetimeformat }}</p>
+                    </div>
+                    <div class="compact-footer">
+                        <span class="click-hint">Click to view full details →</span>
+                    </div>
+                </div>
+
+                <!-- Hidden data attributes for modal -->
+                <div style="display: none;" class="app-full-data" data-app-id="{{ app.id }}" data-app-json="{{ app | tojson | e }}"></div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <!-- Application Details Modal -->
+        <div id="applicationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalAppName"></h2>
+                    <button class="modal-close" onclick="closeApplicationModal()">✕</button>
+                </div>
+                
+                <div class="modal-body" id="modalBody">
+                    <!-- Content will be dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Original detailed view - keep for reference but hide with CSS -->
+        <div style="display: none;">
+        <section class="applications-grid" id="applicationsGridHidden">
             {% for app in applications %}
             <article class="app-box">
                 <!-- Checkbox for batch selection -->
@@ -589,6 +821,7 @@
             </article>
             {% endfor %}
         </section>
+        </div>
         {% else %}
         <section class="no-results">
             <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
@@ -598,6 +831,163 @@
     </main>
 
     <script>
+        // Modal Functions
+        function openApplicationModal(appId) {
+            const modal = document.getElementById('applicationModal');
+            const dataElement = document.querySelector(`[data-app-id="${appId}"]`);
+            
+            if (!dataElement) return;
+            
+            const appData = JSON.parse(dataElement.getAttribute('data-app-json'));
+            
+            // Populate modal header
+            document.getElementById('modalAppName').textContent = appData.name;
+            
+            // Build modal body HTML
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <!-- Status Badge -->
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <span class="status-badge status-${appData.status.replace(/_/g, '-')}" style="padding: 0.5rem 1rem; font-size: 0.95rem;">
+                        ${getStatusIcon(appData.status)} ${appData.status.replace(/_/g, ' ').charAt(0).toUpperCase() + appData.status.replace(/_/g, ' ').slice(1)}
+                    </span>
+                </div>
+
+                <!-- Rating & Application Date -->
+                <div class="section-group">
+                    <div class="grid-2">
+                        <div>
+                            <div class="section-title">⭐ Rating</div>
+                            <div style="padding: 0.7rem; background: rgba(255, 255, 255, 0.7); border-radius: 6px; border: 1px solid var(--border-light);">
+                                ${appData.rating ? '⭐'.repeat(appData.rating) : 'Not rated'}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="section-title">📅 Applied On</div>
+                            <div style="padding: 0.7rem; background: rgba(255, 255, 255, 0.7); border-radius: 6px; border: 1px solid var(--border-light);">
+                                ${new Date(appData.submitted_at * 1000).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="section-group">
+                    <div class="section-title">📞 Contact Information</div>
+                    <div class="grid-2">
+                        <div class="info-item">
+                            <div class="info-label">📧 Email</div>
+                            <div class="info-value"><a href="mailto:${appData.email}" style="color: var(--primary-green); text-decoration: none;">${appData.email}</a></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">📞 Phone</div>
+                            <div class="info-value"><a href="tel:${appData.phone}" style="color: var(--primary-green); text-decoration: none;">${appData.phone}</a></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">💼 Experience</div>
+                            <div class="info-value">${appData.experience_years || 'Not specified'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">⏰ Employment Type</div>
+                            <div class="info-value">${appData.employment_type || 'Not specified'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Position Details -->
+                <div class="section-group" style="background: linear-gradient(135deg, rgba(11, 73, 119, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%); border: 1px solid rgba(11, 73, 119, 0.15);">
+                    <div class="section-title">🎯 Position Details</div>
+                    <div class="grid-2">
+                        <div class="info-item">
+                            <div class="info-label">Position</div>
+                            <div class="info-value" style="font-weight: 600;">${appData.job_title}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Company</div>
+                            <div class="info-value">${appData.company_name || 'Ethio Health Care'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Salary Range</div>
+                            <div class="info-value">${appData.job_salary || 'Not specified'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Employment Type</div>
+                            <div class="info-value" style="font-weight: 600; color: var(--primary-green);">${appData.employment_type || 'Not specified'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Background -->
+                <div class="section-group">
+                    <div class="section-title">📋 Professional Background</div>
+                    <div style="background: rgba(255, 255, 255, 0.7); padding: 1.2rem; border-radius: 8px; border-left: 3px solid var(--primary-green); color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">
+                        ${appData.experience || 'No experience details provided'}
+                    </div>
+                </div>
+
+                ${appData.message ? `
+                <!-- Cover Letter -->
+                <div class="section-group" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.04) 100%); border: 1px solid rgba(34, 197, 94, 0.15);">
+                    <div class="section-title">💬 Cover Letter / Message</div>
+                    <div style="background: rgba(255, 255, 255, 0.8); padding: 1.2rem; border-radius: 8px; border-left: 3px solid var(--primary-green); color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">
+                        ${appData.message}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- CV Link -->
+                <div class="section-group">
+                    <div class="section-title">📄 Documents</div>
+                    <a href="/uploads/${appData.cv}?download=0" target="_blank" class="btn-small" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); text-align: center; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; display: inline-block; color: white; font-weight: 600;">📄 View CV</a>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="section-group">
+                    <div class="section-title">⚙️ Quick Actions</div>
+                    <div class="grid-2" style="gap: 1rem;">
+                        <a href="mailto:${appData.email}" class="btn-small" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); text-align: center; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; color: white; font-weight: 600;">📧 Send Email</a>
+                        <a href="tel:${appData.phone}" class="btn-small" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); text-align: center; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 8px; color: white; font-weight: 600;">📞 Call</a>
+                    </div>
+                </div>
+
+                <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-top: 2rem;">
+                    For full management options (rate, schedule interview, send message, etc.), visit the detailed application page
+                </p>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeApplicationModal() {
+            const modal = document.getElementById('applicationModal');
+            modal.classList.remove('active');
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'pending': '⏳',
+                'approved': '✅',
+                'verification_sent': '📧',
+                'verified': '🔒',
+                'rejected': '❌'
+            };
+            return icons[status] || '❓';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('applicationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeApplicationModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeApplicationModal();
+            }
+        });
+
         // Dark Mode Toggle
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
