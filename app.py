@@ -965,6 +965,10 @@ def manage_jobs():
             salary = request.form.get("salary", "").strip()
             location = request.form.get("location", "").strip()
             company = request.form.get("company", "").strip()
+            summary = request.form.get("summary", "").strip()
+            responsibilities = request.form.get("responsibilities", "").strip()
+            qualifications = request.form.get("qualifications", "").strip()
+            competencies = request.form.get("competencies", "").strip()
 
             company_logo_filename = ""
             logo_file = request.files.get("company_logo")
@@ -985,6 +989,10 @@ def manage_jobs():
                     "location": location,
                     "company": company,
                     "company_logo": company_logo_filename,
+                    "summary": summary,
+                    "responsibilities": responsibilities,
+                    "qualifications": qualifications,
+                    "competencies": competencies,
                     "posted_at": int(time.time()),
                     "applications": []
                 }
