@@ -96,51 +96,88 @@ def allowed_file(filename):
 
 
 def load_applications():
-    """Load applications from Firebase Realtime Database"""
-    if not FIREBASE_ENABLED:
-        print("❌ Firebase not available - cannot load applications")
-        return []
-    
-    try:
-        ref = db.reference('applications')
-        apps_data = ref.get()
+    """Load applications from Firebase Realtime Database with JSON fallback"""
+    # Try Firebase first
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('applications')
+            apps_data = ref.get()
+            
+            if apps_data is None:
+                # No data in Firebase yet - check local JSON
+                if os.path.exists(APPLICATIONS_FILE):
+                    try:
+                        with open(APPLICATIONS_FILE, 'r') as f:
+                            applications = json.load(f)
+                            print(f"✅ Loaded {len(applications)} applications from local JSON (Firebase empty)")
+                            return applications if isinstance(applications, list) else []
+                    except:
+                        pass
+                return []
+            
+            # Firebase returns dict, convert to list
+            if isinstance(apps_data, dict):
+                applications = list(apps_data.values())
+                print(f"✅ Loaded {len(applications)} applications from Firebase")
+                return applications
+            
+            return apps_data if isinstance(apps_data, list) else []
         
-        if apps_data is None:
+        except Exception as e:
+            # If Firebase fails (404 or other error), fall back to JSON
+            print(f"⚠️ Firebase error: {e} - using local JSON fallback")
+            if os.path.exists(APPLICATIONS_FILE):
+                try:
+                    with open(APPLICATIONS_FILE, 'r') as f:
+                        applications = json.load(f)
+                        print(f"✅ Loaded {len(applications)} applications from local JSON (Firebase fallback)")
+                        return applications if isinstance(applications, list) else []
+                except:
+                    pass
             return []
-        
-        # Firebase returns dict, convert to list
-        if isinstance(apps_data, dict):
-            applications = list(apps_data.values())
-            print(f"✅ Loaded {len(applications)} applications from Firebase")
-            return applications
-        
-        return apps_data if isinstance(apps_data, list) else []
     
-    except Exception as e:
-        print(f"❌ Error loading applications from Firebase: {e}")
-        return []
+    # Firebase disabled - use JSON
+    if os.path.exists(APPLICATIONS_FILE):
+        try:
+            with open(APPLICATIONS_FILE, 'r') as f:
+                applications = json.load(f)
+                print(f"✅ Loaded {len(applications)} applications from local JSON")
+                return applications if isinstance(applications, list) else []
+        except Exception as e:
+            print(f"⚠️ Error loading applications from JSON: {e}")
+    return []
 
 
 def save_applications(applications):
-    """Save applications to Firebase Realtime Database ONLY"""
-    if not FIREBASE_ENABLED:
-        print("❌ Firebase not available - cannot save applications")
-        flash("❌ Firebase connection failed. Please try again.", "error")
-        return False
+    """Save applications to Firebase Realtime Database with JSON fallback"""
+    saved = False
     
+    # Try Firebase first if enabled
+    if FIREBASE_ENABLED:
+        try:
+            # Convert list to dict with app IDs as keys for Firebase
+            apps_dict = {app.get('id', str(uuid.uuid4())): app for app in applications}
+            
+            ref = db.reference('applications')
+            ref.update(apps_dict)
+            
+            print(f"✅ Saved {len(applications)} applications to Firebase")
+            saved = True
+        
+        except Exception as e:
+            print(f"⚠️ Firebase save failed: {e} - using JSON fallback")
+    
+    # Always also save to JSON as backup/fallback
     try:
-        # Convert list to dict with app IDs as keys
-        apps_dict = {app.get('id', str(uuid.uuid4())): app for app in applications}
-        
-        ref = db.reference('applications')
-        ref.set(apps_dict)
-        
-        print(f"✅ Saved {len(applications)} applications to Firebase")
-        return True
-    
+        os.makedirs(DATA_FOLDER, exist_ok=True)
+        with open(APPLICATIONS_FILE, 'w') as f:
+            json.dump(applications, f, indent=2)
+        print(f"✅ Saved {len(applications)} applications to local JSON")
+        saved = True
     except Exception as e:
-        print(f"❌ Error saving applications to Firebase: {e}")
-        return False
+        print(f"❌ Error saving to JSON: {e}")
+    
+    return saved
 
 
 def format_datetime(value):
@@ -1178,31 +1215,34 @@ def apply_to_job(job_id):
     error = None
     
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip()
-        phone = request.form.get("phone", "").strip()
-        experience = request.form.get("experience", "").strip()
-        message = request.form.get("message", "").strip()
-        
-        if not name or not email or not phone:
-            error = "Please fill in all required fields"
-        elif not experience:
-            error = "Please tell us about your experience"
-        else:
-            cv_file = request.files.get("cv")
+        try:
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
+            phone = request.form.get("phone", "").strip()
+            experience = request.form.get("experience", "").strip()
+            message = request.form.get("message", "").strip()
             
-            if not cv_file or not cv_file.filename:
-                error = "Please upload your CV"
-            elif not allowed_file(cv_file.filename):
-                error = "Only PDF files are allowed"
+            if not name or not email or not phone:
+                error = "Please fill in all required fields"
+            elif not experience:
+                error = "Please tell us about your experience"
             else:
-                safe_name = secure_filename(cv_file.filename)
-                unique_filename = f"{int(time.time())}_{safe_name}"
-                save_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
+                cv_file = request.files.get("cv")
                 
-                try:
-                    cv_file.save(save_path)
+                if not cv_file or not cv_file.filename:
+                    error = "Please upload your CV"
+                elif not allowed_file(cv_file.filename):
+                    error = "Only PDF files are allowed"
+                else:
+                    safe_name = secure_filename(cv_file.filename)
+                    unique_filename = f"{int(time.time())}_{safe_name}"
+                    save_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
                     
+                    # Save CV file
+                    cv_file.save(save_path)
+                    print(f"✅ CV file saved: {save_path}")
+                    
+                    # Create application object
                     application = {
                         "id": str(uuid.uuid4()),
                         "job_id": job_id,
@@ -1217,15 +1257,26 @@ def apply_to_job(job_id):
                         "status": "pending"
                     }
                     
+                    # Add application ID to job's applications list
+                    if "applications" not in job:
+                        job["applications"] = []
                     job["applications"].append(application.get("id"))
-                    update_job(job)
                     
+                    # Update job with application reference
+                    print(f"📝 Updating job {job_id} with application reference...")
+                    update_job(job)
+                    print(f"✅ Job updated with application reference")
+                    
+                    # Save application
+                    print(f"📝 Loading and saving applications...")
                     applications = load_applications()
                     applications.append(application)
-                    save_applications(applications)
+                    if not save_applications(applications):
+                        print(f"⚠️ Warning: save_applications returned False")
+                    print(f"✅ Applications saved - total: {len(applications)}")
                     
-                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
-                    
+                    # Send confirmation email
+                    print(f"📧 Sending confirmation email to {email}...")
                     subject = f"Application Received - {job.get('title')}"
                     body = f"""
 Hello {name},
@@ -1238,10 +1289,16 @@ Best regards,
 Ethio Health Care
 """
                     send_email(email, subject, body)
+                    print(f"✅ Confirmation email sent")
                     
-                except Exception as exc:
-                    error = "Could not save your application. Please try again."
-                    print(exc)
+                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
+                    
+        except Exception as exc:
+            import traceback
+            error_msg = f"{str(exc)}"
+            print(f"❌ ERROR in apply_to_job: {error_msg}")
+            print(f"❌ TRACEBACK:\n{traceback.format_exc()}")
+            error = "Could not save your application. Please try again."
     
     return render_template(
         "apply-job.html",

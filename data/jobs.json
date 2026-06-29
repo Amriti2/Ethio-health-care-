@@ -1,9 +1,19 @@
 [
   {
-    "id": "test-job",
-    "title": "Test Job",
-    "company": "Test Co",
-    "role": "Test Role",
-    "posted_at": 1234567890
+    "id": "nurse-001",
+    "title": "Registered Nurse",
+    "company": "Test Healthcare Inc",
+    "company_logo": "",
+    "role": "Nursing",
+    "salary": "30,000 - 50,000 ETB",
+    "location": "Addis Ababa",
+    "summary": "We are seeking a skilled and compassionate Registered Nurse to join our healthcare team.",
+    "responsibilities": "Provide patient care, Monitor vital signs, Administer medications, Maintain medical records",
+    "qualifications": "Bachelor's degree in Nursing, Valid RN license, 2+ years clinical experience",
+    "competencies": "Patient care, Communication, Problem-solving, Attention to detail, Teamwork",
+    "posted_at": 1719705600,
+    "applications": [
+      "e88fdd72-44dc-4a4c-abd9-063abe38a5dd"
+    ]
   }
 ]
