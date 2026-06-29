@@ -1262,10 +1262,14 @@ def apply_to_job(job_id):
                         job["applications"] = []
                     job["applications"].append(application.get("id"))
                     
-                    # Update job with application reference
-                    print(f"📝 Updating job {job_id} with application reference...")
-                    update_job(job)
-                    print(f"✅ Job updated with application reference")
+                    # Update job with application reference (wrapped separately - must not block save)
+                    try:
+                        print(f"📝 Updating job {job_id} with application reference...")
+                        update_job(job)
+                        print(f"✅ Job updated with application reference")
+                    except Exception as job_update_exc:
+                        print(f"⚠️ Job update failed (but continuing): {str(job_update_exc)}")
+                    
                     
                     # Save application
                     print(f"📝 Loading and saving applications...")
@@ -1275,10 +1279,14 @@ def apply_to_job(job_id):
                         print(f"⚠️ Warning: save_applications returned False")
                     print(f"✅ Applications saved - total: {len(applications)}")
                     
-                    # Send confirmation email
-                    print(f"📧 Sending confirmation email to {email}...")
-                    subject = f"Application Received - {job.get('title')}"
-                    body = f"""
+                    # Set success message BEFORE sending email
+                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
+                    
+                    # Send confirmation email (wrapped in try-except to not block application save)
+                    try:
+                        print(f"📧 Sending confirmation email to {email}...")
+                        subject = f"Application Received - {job.get('title')}"
+                        body = f"""
 Hello {name},
 
 Thank you for applying to the {job.get('title')} position at Ethio Health Care!
@@ -1288,10 +1296,11 @@ We have received your application and will review it shortly. You will hear from
 Best regards,
 Ethio Health Care
 """
-                    send_email(email, subject, body)
-                    print(f"✅ Confirmation email sent")
+                        send_email(email, subject, body)
+                        print(f"✅ Confirmation email sent")
+                    except Exception as email_exc:
+                        print(f"⚠️ Email failed (but application was saved): {str(email_exc)}")
                     
-                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
                     
         except Exception as exc:
             import traceback
