@@ -359,9 +359,43 @@
                     </div>
                     <div class="detail-row">
                         <span class="label">Shift</span>
-                        <span class="value">{{ app.shift_preference }}</span>
+                        <span class="value">{{ app.employment_type or 'Not specified' }}</span>
                     </div>
                 </div>
+
+                <!-- Job Information -->
+                <div class="app-details" style="background: rgba(11, 73, 119, 0.05); border-left: 4px solid var(--primary-blue); padding: 0.8rem; margin: 1rem 0; border-radius: 6px;">
+                    <div class="detail-row" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span class="label">Position Applied For</span>
+                        <span class="value" style="font-weight: 600;">{{ app.job_title }}</span>
+                    </div>
+                    <div class="detail-row" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span class="label">Company</span>
+                        <span class="value">{{ app.company_name or 'Ethio Health Care' }}</span>
+                    </div>
+                    <div class="detail-row" style="border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <span class="label">Salary Range</span>
+                        <span class="value">{{ app.job_salary or 'Not specified' }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Employment Type</span>
+                        <span class="value" style="font-weight: 600; color: var(--primary-green);">{{ app.employment_type or 'Not specified' }}</span>
+                    </div>
+                </div>
+
+                <!-- Applicant Experience Details -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                    <strong style="display: block; margin-bottom: 0.7rem; color: var(--primary-blue);">📋 Experience Details</strong>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">{{ app.experience or 'No experience details provided' }}</p>
+                </div>
+
+                <!-- Cover Letter / Message -->
+                {% if app.message %}
+                <div style="background: rgba(34, 197, 94, 0.08); border-left: 4px solid var(--primary-green); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                    <strong style="display: block; margin-bottom: 0.7rem; color: var(--primary-green);">💬 Cover Letter / Additional Information</strong>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0; white-space: pre-wrap;">{{ app.message }}</p>
+                </div>
+                {% endif %}
 
                 <!-- Interview Section -->
                 {% if app.interview %}

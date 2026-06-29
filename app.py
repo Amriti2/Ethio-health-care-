@@ -709,6 +709,19 @@ def dashboard():
     elif sort_by == "experience":
         applications.sort(key=lambda x: int(x.get("experience_years", 0)), reverse=True)
 
+    # Enrich applications with job details
+    jobs = load_jobs()
+    jobs_by_id = {job.get("id"): job for job in jobs}
+    
+    for app in applications:
+        job_id = app.get("job_id")
+        if job_id and job_id in jobs_by_id:
+            job = jobs_by_id[job_id]
+            # Add job details to application for display
+            app["employment_type"] = job.get("employment_type", "Not specified")
+            app["company_name"] = job.get("company", "Not specified")
+            app["job_salary"] = job.get("salary", "Not specified")
+
     smtp_configured = bool(
         SMTP_HOST and SMTP_USER and SMTP_PASS
     )
