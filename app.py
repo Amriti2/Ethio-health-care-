@@ -1343,6 +1343,11 @@ Ethio Health Care
 # SEO ROUTES
 # --------------------------
 
+@app.route("/google2e677e87ec39e405.html")
+def google_verification():
+    """Serve Google Search Console verification file from root"""
+    return send_from_directory(os.path.join(app.root_path, "static"), "google2e677e87ec39e405.html", mimetype="text/html")
+
 @app.route("/sitemap.xml")
 def sitemap():
     """Generate sitemap.xml for search engines"""
