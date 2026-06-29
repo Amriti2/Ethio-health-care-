@@ -13,6 +13,12 @@ venv/
 *.log
 uploads/
 data/applications.json
+firebase-key.json
+.env
+test_*.py
+check_*.py
+static/js/*firebase*.json
+RENDER_SETUP.sh
 .DS_Store
 firebase-key.json
 .env
