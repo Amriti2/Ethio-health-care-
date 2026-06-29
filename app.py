@@ -9,6 +9,21 @@ from email.message import EmailMessage
 from werkzeug.utils import secure_filename
 from collections import Counter
 
+# Firebase initialization (optional)
+try:
+    import firebase_admin
+    from firebase_admin import credentials, db, storage
+    FIREBASE_ENABLED = True
+    # Try to initialize Firebase if credentials exist
+    if not firebase_admin._apps and os.environ.get("FIREBASE_CREDENTIALS"):
+        cred_dict = json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': os.environ.get("FIREBASE_DATABASE_URL", "")
+        })
+except (ImportError, Exception):
+    FIREBASE_ENABLED = False
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -61,6 +76,12 @@ def allowed_file(filename):
 
 
 def load_applications():
+    # Try Firebase first
+    firebase_apps = load_applications_from_firebase()
+    if firebase_apps is not None:
+        return firebase_apps
+    
+    # Fallback to JSON
     if not os.path.exists(APPLICATIONS_FILE):
         return []
 
@@ -72,6 +93,11 @@ def load_applications():
 
 
 def save_applications(applications):
+    # Save to Firebase if enabled
+    if FIREBASE_ENABLED:
+        save_applications_to_firebase(applications)
+    
+    # Always save to JSON as backup
     with open(APPLICATIONS_FILE, "w", encoding="utf-8") as file:
         json.dump(applications, file, indent=2)
 
@@ -81,6 +107,59 @@ def format_datetime(value):
         return time.strftime("%Y-%m-%d %H:%M", time.localtime(int(value)))
     except Exception:
         return "Unknown"
+
+
+# Firebase helper functions
+def save_jobs_to_firebase(jobs_list):
+    """Save jobs to Firebase if enabled, fallback to JSON"""
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('jobs')
+            jobs_dict = {job['id']: job for job in jobs_list}
+            ref.set(jobs_dict)
+            return True
+        except Exception as e:
+            print(f"Firebase error: {e}, falling back to JSON")
+    return False
+
+
+def load_jobs_from_firebase():
+    """Load jobs from Firebase if enabled, fallback to JSON"""
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('jobs')
+            jobs_data = ref.get()
+            if jobs_data:
+                return list(jobs_data.values())
+        except Exception as e:
+            print(f"Firebase error: {e}, falling back to JSON")
+    return None
+
+
+def save_applications_to_firebase(applications):
+    """Save applications to Firebase if enabled, fallback to JSON"""
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('applications')
+            apps_dict = {app.get('id', str(uuid.uuid4())): app for app in applications}
+            ref.set(apps_dict)
+            return True
+        except Exception as e:
+            print(f"Firebase error: {e}, falling back to JSON")
+    return False
+
+
+def load_applications_from_firebase():
+    """Load applications from Firebase if enabled, fallback to JSON"""
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('applications')
+            apps_data = ref.get()
+            if apps_data:
+                return list(apps_data.values())
+        except Exception as e:
+            print(f"Firebase error: {e}, falling back to JSON")
+    return None
 
 
 app.jinja_env.filters["datetimeformat"] = format_datetime
@@ -122,6 +201,12 @@ def delete_application(app_id):
 # --------------------------
 
 def load_jobs():
+    # Try Firebase first
+    firebase_jobs = load_jobs_from_firebase()
+    if firebase_jobs is not None:
+        return firebase_jobs
+    
+    # Fallback to JSON
     if not os.path.exists(JOBS_FILE):
         return []
     try:
@@ -132,6 +217,11 @@ def load_jobs():
 
 
 def save_jobs(jobs):
+    # Save to Firebase if enabled
+    if FIREBASE_ENABLED:
+        save_jobs_to_firebase(jobs)
+    
+    # Always save to JSON as backup
     with open(JOBS_FILE, "w", encoding="utf-8") as file:
         json.dump(jobs, file, indent=2)
 
