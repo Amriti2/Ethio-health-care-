@@ -968,6 +968,17 @@ def manage_jobs():
             responsibilities = request.form.get("responsibilities", "").strip()
             qualifications = request.form.get("qualifications", "").strip()
             competencies = request.form.get("competencies", "").strip()
+            posted_date_str = request.form.get("posted_date", "")
+            
+            # Convert date string to timestamp
+            posted_timestamp = int(time.time())
+            if posted_date_str:
+                try:
+                    from datetime import datetime
+                    posted_dt = datetime.strptime(posted_date_str, "%Y-%m-%d")
+                    posted_timestamp = int(posted_dt.timestamp())
+                except:
+                    posted_timestamp = int(time.time())
 
             company_logo_filename = ""
             logo_file = request.files.get("company_logo")
@@ -991,7 +1002,7 @@ def manage_jobs():
                     "responsibilities": responsibilities,
                     "qualifications": qualifications,
                     "competencies": competencies,
-                    "posted_at": int(time.time()),
+                    "posted_at": posted_timestamp,
                     "applications": []
                 }
                 jobs_list = load_jobs()
@@ -1010,7 +1021,9 @@ def manage_jobs():
             return redirect(url_for("manage_jobs"))
     
     jobs_list = load_jobs()
-    return render_template("dashboard-jobs.html", jobs=jobs_list)
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+    return render_template("dashboard-jobs.html", jobs=jobs_list, today=today)
 
 
 @app.route("/apply-job/<job_id>", methods=["GET", "POST"])

@@ -293,6 +293,10 @@
                         <span class="meta-label">📍 Location</span>
                         <span class="meta-value">{{ job.location or 'Various' }}</span>
                     </div>
+                    <div class="meta-item">
+                        <span class="meta-label">📅 Posted</span>
+                        <span class="meta-value">{{ job.posted_at|datetimeformat }}</span>
+                    </div>
                 </div>
 
                 <div class="job-description">

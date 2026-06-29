@@ -178,6 +178,10 @@
                 <div class="info-label">🏢 Department</div>
                 <div class="info-value">{{ job.role }}</div>
             </div>
+            <div class="info-block">
+                <div class="info-label">📅 Posted Date</div>
+                <div class="info-value">{{ job.posted_at|datetimeformat }}</div>
+            </div>
         </div>
 
         <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">📋 Job Summary</h2>

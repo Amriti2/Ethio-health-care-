@@ -283,6 +283,11 @@
                     <div class="job-summary-value">{{ job.salary or 'Competitive' }}</div>
                 </div>
 
+                <div class="job-summary-field">
+                    <div class="job-summary-label">📅 Posted Date</div>
+                    <div class="job-summary-value">{{ job.posted_at|datetimeformat }}</div>
+                </div>
+
                 {% if job.summary %}
                 <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
                 <h4 style="color: var(--primary-blue); margin-bottom: 0.8rem;">Job Summary</h4>
