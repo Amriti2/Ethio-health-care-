@@ -61,6 +61,11 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* Reset all backgrounds to be light on index page */
+        header, section, div, main {
+            background-color: transparent !important;
+        }
+
         .landing-hero {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
             position: relative;
@@ -322,16 +327,19 @@
             align-items: center;
             justify-content: center;
             animation: scaleIn 0.8s ease-out 0.2s both;
+            width: 100%;
         }
 
         .poster-card {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.98) !important;
             backdrop-filter: blur(20px);
             border: 2px solid rgba(16, 185, 129, 0.2);
             border-radius: 2rem;
             padding: 2rem;
             box-shadow: 0 30px 80px rgba(14, 116, 144, 0.15);
             transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+            width: 100%;
+            color: var(--text-primary) !important;
         }
 
         .poster-card:hover {
@@ -345,6 +353,12 @@
             border-radius: 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            background: white;
+            display: block;
+        }
+
+        .poster-copy {
+            background: transparent !important;
         }
 
         .poster-copy h2 {
@@ -521,6 +535,15 @@
             }
             .feature-strip {
                 padding: 3rem 1.5rem;
+            }
+            .landing-visual {
+                width: 100%;
+                max-width: 100%;
+            }
+            .poster-card {
+                width: 100%;
+                max-width: 100%;
+                background: rgba(255, 255, 255, 0.98) !important;
             }
         }
     </style>
