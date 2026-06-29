@@ -858,9 +858,18 @@
                     <div class="grid-2">
                         <div>
                             <div class="section-title">⭐ Rating</div>
-                            <div style="padding: 0.7rem; background: rgba(255, 255, 255, 0.7); border-radius: 6px; border: 1px solid var(--border-light);">
-                                ${appData.rating ? '⭐'.repeat(appData.rating) : 'Not rated'}
-                            </div>
+                            <form id="ratingForm_${appData.id}" onsubmit="submitRating(event, '${appData.id}')" style="display: grid; grid-template-columns: 1fr auto; gap: 0.8rem;">
+                                <select name="rating" id="ratingSelect_${appData.id}" style="padding: 0.7rem; border: 1px solid var(--border-light); border-radius: 8px; font-size: 0.95rem; background: var(--card-bg);">
+                                    <option value="">${appData.rating ? '⭐'.repeat(appData.rating) : '👤 Select rating...'}</option>
+                                    <option value="1">⭐ Poor</option>
+                                    <option value="2">⭐⭐ Fair</option>
+                                    <option value="3">⭐⭐⭐ Good</option>
+                                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                </select>
+                                <button type="submit" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); color: white; border: none; padding: 0.7rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer;">Save</button>
+                            </form>
+                            <div id="ratingMessage_${appData.id}" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--primary-green); display: none;">✅ Rating saved</div>
                         </div>
                         <div>
                             <div class="section-title">📅 Applied On</div>
@@ -972,6 +981,50 @@
                 'rejected': '❌'
             };
             return icons[status] || '❓';
+        }
+
+        // Submit rating via AJAX
+        function submitRating(event, appId) {
+            event.preventDefault();
+            
+            const select = document.getElementById(`ratingSelect_${appId}`);
+            const rating = select.value;
+            
+            if (!rating) {
+                alert('Please select a rating');
+                return;
+            }
+            
+            // Submit using fetch
+            fetch(`/dashboard/app/${appId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `action=rate&rating=${rating}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message
+                    const messageDiv = document.getElementById(`ratingMessage_${appId}`);
+                    messageDiv.style.display = 'block';
+                    messageDiv.textContent = `✅ Rating saved: ${'⭐'.repeat(parseInt(rating))}`;
+                    
+                    // Clear the select dropdown
+                    select.value = '';
+                    
+                    // Hide message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 3000);
+                } else {
+                    alert('Failed to save rating');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving rating');
+            });
         }
 
         // Close modal when clicking outside
