@@ -9,6 +9,12 @@ services:
     envVars:
       - key: DATA_DIR
         value: /var/data
+      - key: BASE_URL
+        value: https://ethio-health-care.onrender.com
+      - key: SMTP_USE_TLS
+        value: "true"
+      - key: SMTP_USE_SSL
+        value: "false"
     disks:
       - name: ethio-health-care-data
         mountPath: /var/data

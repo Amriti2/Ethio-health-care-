@@ -39,8 +39,10 @@ SMTP_HOST = os.environ.get("SMTP_HOST", "")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
+SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+SMTP_USE_SSL = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
 
-EMAIL_FROM = os.environ.get("EMAIL_FROM", "no-reply@ethiohealthcare.com")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", SMTP_USER or "no-reply@ethiohealthcare.com")
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:5002")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -163,10 +165,18 @@ def send_email(to_address, subject, body):
             message["From"] = EMAIL_FROM
             message["To"] = to_address
             message.set_content(body)
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
-                smtp.starttls()
-                smtp.login(SMTP_USER, SMTP_PASS)
-                smtp.send_message(message)
+
+            if SMTP_USE_SSL:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
+                    smtp.login(SMTP_USER, SMTP_PASS)
+                    smtp.send_message(message)
+            else:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as smtp:
+                    if SMTP_USE_TLS:
+                        smtp.starttls()
+                    smtp.login(SMTP_USER, SMTP_PASS)
+                    smtp.send_message(message)
+
             print(f"✓ EMAIL SENT: {subject} → {to_address}")
             return True, "Email sent successfully."
         except Exception as exc:
