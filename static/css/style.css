@@ -18,6 +18,14 @@
     :root {
         color-scheme: light !important;
     }
+    html {
+        background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
+        background-attachment: fixed !important;
+        background-repeat: no-repeat !important;
+    }
+    body {
+        background: transparent !important;
+    }
 }
 
 * {
@@ -30,6 +38,7 @@
 html {
     background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
     background-attachment: fixed;
+    background-repeat: no-repeat;
     height: 100%;
 }
 

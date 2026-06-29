@@ -25,6 +25,14 @@
     :root {
         color-scheme: light !important;
     }
+    html {
+        background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
+        background-attachment: fixed !important;
+        background-repeat: no-repeat !important;
+    }
+    body {
+        background: transparent !important;
+    }
 }
 
 /* Override any dark mode classes that might be applied */
