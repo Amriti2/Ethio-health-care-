@@ -191,51 +191,88 @@ def delete_application(app_id):
 # --------------------------
 
 def load_jobs():
-    """Load jobs from Firebase Realtime Database"""
-    if not FIREBASE_ENABLED:
-        print("❌ Firebase not available - cannot load jobs")
-        return []
-    
-    try:
-        ref = db.reference('jobs')
-        jobs_data = ref.get()
+    """Load jobs from Firebase Realtime Database with JSON fallback"""
+    # Try Firebase first
+    if FIREBASE_ENABLED:
+        try:
+            ref = db.reference('jobs')
+            jobs_data = ref.get()
+            
+            if jobs_data is None:
+                # No data in Firebase yet - check local JSON
+                if os.path.exists(JOBS_FILE):
+                    try:
+                        with open(JOBS_FILE, 'r') as f:
+                            jobs = json.load(f)
+                            print(f"✅ Loaded {len(jobs)} jobs from local JSON (Firebase empty)")
+                            return jobs if isinstance(jobs, list) else []
+                    except:
+                        pass
+                return []
+            
+            # Firebase returns dict, convert to list
+            if isinstance(jobs_data, dict):
+                jobs = list(jobs_data.values())
+                print(f"✅ Loaded {len(jobs)} jobs from Firebase")
+                return jobs
+            
+            return jobs_data if isinstance(jobs_data, list) else []
         
-        if jobs_data is None:
+        except Exception as e:
+            # If Firebase fails (404 or other error), fall back to JSON
+            print(f"⚠️ Firebase error: {e} - using local JSON fallback")
+            if os.path.exists(JOBS_FILE):
+                try:
+                    with open(JOBS_FILE, 'r') as f:
+                        jobs = json.load(f)
+                        print(f"✅ Loaded {len(jobs)} jobs from local JSON (Firebase fallback)")
+                        return jobs if isinstance(jobs, list) else []
+                except:
+                    pass
             return []
-        
-        # Firebase returns dict, convert to list
-        if isinstance(jobs_data, dict):
-            jobs = list(jobs_data.values())
-            print(f"✅ Loaded {len(jobs)} jobs from Firebase")
-            return jobs
-        
-        return jobs_data if isinstance(jobs_data, list) else []
     
-    except Exception as e:
-        print(f"❌ Error loading jobs from Firebase: {e}")
-        return []
+    # Firebase disabled - use JSON
+    if os.path.exists(JOBS_FILE):
+        try:
+            with open(JOBS_FILE, 'r') as f:
+                jobs = json.load(f)
+                print(f"✅ Loaded {len(jobs)} jobs from local JSON")
+                return jobs if isinstance(jobs, list) else []
+        except Exception as e:
+            print(f"⚠️ Error loading jobs from JSON: {e}")
+    return []
 
 
 def save_jobs(jobs):
-    """Save jobs to Firebase Realtime Database ONLY"""
-    if not FIREBASE_ENABLED:
-        print("❌ Firebase not available - cannot save jobs")
-        flash("❌ Firebase connection failed. Please try again.", "error")
-        return False
+    """Save jobs to Firebase Realtime Database with JSON fallback"""
+    saved = False
     
+    # Try Firebase first if enabled
+    if FIREBASE_ENABLED:
+        try:
+            # Convert list to dict with job IDs as keys for Firebase
+            jobs_dict = {job.get('id', str(uuid.uuid4())): job for job in jobs}
+            
+            ref = db.reference('jobs')
+            ref.update(jobs_dict)
+            
+            print(f"✅ Saved {len(jobs)} jobs to Firebase")
+            saved = True
+        
+        except Exception as e:
+            print(f"⚠️ Firebase save failed: {e} - using JSON fallback")
+    
+    # Always also save to JSON as backup/fallback
     try:
-        # Convert list to dict with job IDs as keys
-        jobs_dict = {job.get('id', str(uuid.uuid4())): job for job in jobs}
-        
-        ref = db.reference('jobs')
-        ref.set(jobs_dict)
-        
-        print(f"✅ Saved {len(jobs)} jobs to Firebase")
-        return True
-    
+        os.makedirs(DATA_FOLDER, exist_ok=True)
+        with open(JOBS_FILE, 'w') as f:
+            json.dump(jobs, f, indent=2)
+        print(f"✅ Saved {len(jobs)} jobs to local JSON")
+        saved = True
     except Exception as e:
-        print(f"❌ Error saving jobs to Firebase: {e}")
-        return False
+        print(f"❌ Error saving to JSON: {e}")
+    
+    return saved
 
 
 def find_job(job_id):
@@ -1109,8 +1146,10 @@ def manage_jobs():
                 }
                 jobs_list = load_jobs()
                 jobs_list.append(job)
-                save_jobs(jobs_list)
-                flash("Job posted successfully!")
+                if save_jobs(jobs_list):
+                    flash("Job posted successfully!")
+                else:
+                    flash("Job data prepared but Firebase connection issue - check logs")
             else:
                 flash("Please fill in all required fields")
             
