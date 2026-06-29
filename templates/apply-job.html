@@ -283,6 +283,30 @@
                     <div class="job-summary-value">{{ job.salary or 'Competitive' }}</div>
                 </div>
 
+                {% if job.summary %}
+                <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
+                <h4 style="color: var(--primary-blue); margin-bottom: 0.8rem;">Job Summary</h4>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-line;">{{ job.summary }}</p>
+                {% endif %}
+
+                {% if job.responsibilities %}
+                <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
+                <h4 style="color: var(--primary-blue); margin-bottom: 0.8rem;">Key Responsibilities</h4>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-line;">{{ job.responsibilities }}</p>
+                {% endif %}
+
+                {% if job.qualifications %}
+                <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
+                <h4 style="color: var(--primary-blue); margin-bottom: 0.8rem;">Qualifications</h4>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-line;">{{ job.qualifications }}</p>
+                {% endif %}
+
+                {% if job.competencies %}
+                <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
+                <h4 style="color: var(--primary-blue); margin-bottom: 0.8rem;">Required Competencies</h4>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; white-space: pre-line;">{{ job.competencies }}</p>
+                {% endif %}
+
                 <hr style="border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 1.5rem 0;">
 
                 <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Application Tips</h4>

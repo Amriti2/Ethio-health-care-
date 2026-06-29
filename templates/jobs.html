@@ -299,6 +299,20 @@
                     {{ job.summary or job.description or 'No summary provided.' }}
                 </div>
 
+                {% if job.responsibilities %}
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                    <p style="font-weight: 600; color: var(--primary-blue); margin: 0.5rem 0 0.3rem;">Key Responsibilities:</p>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0; white-space: pre-line; line-height: 1.5;">{{ job.responsibilities[:200] }}{% if job.responsibilities|length > 200 %}...{% endif %}</p>
+                </div>
+                {% endif %}
+
+                {% if job.qualifications %}
+                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border-light);">
+                    <p style="font-weight: 600; color: var(--primary-blue); margin: 0.5rem 0 0.3rem;">Qualifications:</p>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0; white-space: pre-line; line-height: 1.5;">{{ job.qualifications[:200] }}{% if job.qualifications|length > 200 %}...{% endif %}</p>
+                </div>
+                {% endif %}
+
                 <div class="job-footer">
                     <a href="/apply-job/{{ job.id }}" class="apply-btn">Apply Now</a>
                     <a href="/job/{{ job.id }}" class="view-btn">View Details →</a>

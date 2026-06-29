@@ -175,6 +175,21 @@
         <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">Job Summary</h2>
         <div class="job-description-detail">{{ job.summary or job.description or 'No summary provided.' }}</div>
 
+        {% if job.responsibilities %}
+        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Key Responsibilities</h2>
+        <div class="job-description-detail" style="white-space: pre-line;">{{ job.responsibilities }}</div>
+        {% endif %}
+
+        {% if job.qualifications %}
+        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Qualifications</h2>
+        <div class="job-description-detail" style="white-space: pre-line;">{{ job.qualifications }}</div>
+        {% endif %}
+
+        {% if job.competencies %}
+        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Required Competencies</h2>
+        <div class="job-description-detail" style="white-space: pre-line;">{{ job.competencies }}</div>
+        {% endif %}
+
         <div class="cta-section">
             <h2>Ready to Apply?</h2>
             <p>Join our team and make a difference in healthcare. Apply now to be considered for this position.</p>
