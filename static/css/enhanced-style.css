@@ -35,7 +35,19 @@ body.dark-mode {
     --text-secondary: #64748b !important;
     --text-light: #94a3b8 !important;
     --border-light: rgba(15, 23, 42, 0.08) !important;
+    background: transparent !important;
+}
+
+body.dark-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
+    background-attachment: fixed;
+    z-index: -1;
 }
 
 * {
@@ -47,10 +59,13 @@ body.dark-mode {
 
 html {
     scroll-behavior: smooth;
+    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+    background-attachment: fixed;
+    height: 100%;
 }
 
 body {
-    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+    background: transparent;
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
