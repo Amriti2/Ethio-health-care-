@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Apply - {{ job.title }} | Ethio Health Care">
+    <meta property="og:description" content="Apply for the {{ job.title }} position at Ethio Health Care.">
+    <meta property="og:url" content="https://ethio-health-care.onrender.com/apply-job/{{ job.id }}">
+    <meta property="og:site_name" content="Ethio Health Care">
     <title>Apply - {{ job.title }} | ETHIO HEALTH CARE</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
     <style>
