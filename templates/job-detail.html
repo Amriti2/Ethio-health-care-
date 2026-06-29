@@ -153,7 +153,15 @@
         </div>
 
         <div class="job-header-detail">
-            <h1 class="job-title-detail">{{ job.title }}</h1>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                {% if job.company_logo %}
+                <img src="/static/logos/{{ job.company_logo }}" alt="{{ job.company }} logo" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: white; padding: 4px;">
+                {% endif %}
+                <div>
+                    <h1 class="job-title-detail" style="margin: 0;">{{ job.title }}</h1>
+                    {% if job.company %}<p style="font-size: 1rem; color: var(--primary-green); font-weight: 600; margin: 0.3rem 0;">{{ job.company }}</p>{% endif %}
+                </div>
+            </div>
             <p style="font-size: 1.1rem; color: var(--text-secondary);">{{ job.role }} • {% if job.posted_at %}Recently posted{% else %}Posting date unavailable{% endif %}</p>
         </div>
 
@@ -172,22 +180,28 @@
             </div>
         </div>
 
-        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">Job Summary</h2>
+        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">📋 Job Summary</h2>
         <div class="job-description-detail">{{ job.summary or job.description or 'No summary provided.' }}</div>
 
         {% if job.responsibilities %}
-        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Key Responsibilities</h2>
-        <div class="job-description-detail" style="white-space: pre-line;">{{ job.responsibilities }}</div>
+        <div style="background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; border-left: 4px solid var(--primary-green);">
+            <h2 style="color: var(--primary-blue); margin-top: 0; margin-bottom: 1rem;">🎯 Key Responsibilities</h2>
+            <div class="job-description-detail" style="white-space: pre-line;">{{ job.responsibilities }}</div>
+        </div>
         {% endif %}
 
         {% if job.qualifications %}
-        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Qualifications</h2>
-        <div class="job-description-detail" style="white-space: pre-line;">{{ job.qualifications }}</div>
+        <div style="background: rgba(6, 182, 212, 0.05); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; border-left: 4px solid var(--secondary-teal);">
+            <h2 style="color: var(--primary-blue); margin-top: 0; margin-bottom: 1rem;">🎓 Qualifications</h2>
+            <div class="job-description-detail" style="white-space: pre-line;">{{ job.qualifications }}</div>
+        </div>
         {% endif %}
 
         {% if job.competencies %}
-        <h2 style="color: var(--primary-blue); margin-top: 2.5rem; margin-bottom: 1rem;">Required Competencies</h2>
-        <div class="job-description-detail" style="white-space: pre-line;">{{ job.competencies }}</div>
+        <div style="background: rgba(11, 73, 119, 0.05); padding: 1.5rem; border-radius: 10px; margin-top: 2rem; border-left: 4px solid var(--primary-blue);">
+            <h2 style="color: var(--primary-blue); margin-top: 0; margin-bottom: 1rem;">⭐ Required Competencies</h2>
+            <div class="job-description-detail" style="white-space: pre-line;">{{ job.competencies }}</div>
+        </div>
         {% endif %}
 
         <div class="cta-section">
