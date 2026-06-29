@@ -1,0 +1,32 @@
+# Ethio Health Care - SEO Robot Instructions
+# Allow all legitimate search engines to crawl the site
+
+User-agent: *
+Allow: /
+Allow: /jobs
+Allow: /apply-job/*
+Disallow: /dashboard
+Disallow: /login
+Disallow: /admin
+Disallow: /uploads
+Disallow: /data
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://ethio-health-care.onrender.com/sitemap.xml

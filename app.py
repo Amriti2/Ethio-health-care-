@@ -1340,6 +1340,63 @@ Ethio Health Care
 
 
 # --------------------------
+# SEO ROUTES
+# --------------------------
+
+@app.route("/sitemap.xml")
+def sitemap():
+    """Generate sitemap.xml for search engines"""
+    base_url = "https://ethio-health-care.onrender.com"
+    
+    # In development, use localhost
+    if os.environ.get("FLASK_ENV") != "production":
+        base_url = "http://localhost:5002"
+    
+    jobs = load_jobs()
+    
+    sitemap_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    
+    # Static pages
+    static_pages = [
+        ("/", "weekly", "1.0"),
+        ("/jobs", "weekly", "0.9"),
+        ("/login", "monthly", "0.5"),
+    ]
+    
+    for path, changefreq, priority in static_pages:
+        sitemap_lines.append(f"""  <url>
+    <loc>{base_url}{path}</loc>
+    <changefreq>{changefreq}</changefreq>
+    <priority>{priority}</priority>
+  </url>""")
+    
+    # Dynamic job pages
+    for job in jobs:
+        job_url = f"{base_url}/job-detail/{job.get('id', '')}"
+        sitemap_lines.append(f"""  <url>
+    <loc>{job_url}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>""")
+    
+    sitemap_lines.append("</urlset>")
+    
+    sitemap_xml = "\n".join(sitemap_lines)
+    
+    from flask import Response
+    return Response(sitemap_xml, mimetype="application/xml")
+
+
+@app.route("/robots.txt")
+def robots():
+    """Serve robots.txt for search engines"""
+    return send_from_directory(os.path.join(app.root_path, "static"), "robots.txt", mimetype="text/plain")
+
+
+# --------------------------
 # START APP
 # --------------------------
 

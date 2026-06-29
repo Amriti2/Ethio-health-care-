@@ -5,13 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light only">
     <meta name="theme-color" content="#ffffff">
+    
+    <!-- SEO Meta Tags -->
+    <title>{{ job.title }} at {{ job.company }} - Ethio Health Care</title>
+    <meta name="description" content="{{ job.summary or 'Apply for ' + job.title + ' position at ' + job.company + '. Healthcare job on Ethio Health Care.' }}">
+    <meta name="keywords" content="{{ job.title }}, {{ job.company }}, healthcare jobs, {{ job.location }}, nursing, medical careers">
+    <meta name="author" content="Ethio Health Care">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ethio-health-care.onrender.com/job-detail/{{ job.id }}">
+    
+    <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ job.title }} - Ethio Health Care">
     <meta property="og:description" content="{{ job.summary or 'Apply for this healthcare position at Ethio Health Care.' }}">
-    <meta property="og:url" content="https://ethio-health-care.onrender.com/job/{{ job.id }}">
+    <meta property="og:url" content="https://ethio-health-care.onrender.com/job-detail/{{ job.id }}">
     <meta property="og:site_name" content="Ethio Health Care">
-    <title>{{ job.title }} - ETHIO HEALTH CARE</title>
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="{{ job.title }} - Ethio Health Care">
+    <meta property="twitter:description" content="Healthcare Job Opportunity">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    
+    <!-- Schema Markup for Job Posting -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      "title": "{{ job.title }}",
+      "description": "{{ job.summary }}",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": "{{ job.company }}"
+      },
+      "jobLocation": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "{{ job.location }}"
+        }
+      },
+      "baseSalary": {
+        "@type": "PriceSpecification",
+        "priceCurrency": "ETB",
+        "price": "{{ job.salary or 'Competitive' }}"
+      },
+      "employmentType": "{{ job.employment_type or 'FULL_TIME' }}",
+      "datePosted": "{{ job.posted_at | datetimeformat('%Y-%m-%d') }}",
+      "validThrough": "{{ (job.posted_at | datetimeformat('%Y-%m-%d') if job.posted_at else '') }}"
+    }
+    </script>
     <style>
         .job-detail-page {
             max-width: 1000px;
