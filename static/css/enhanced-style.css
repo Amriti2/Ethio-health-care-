@@ -17,15 +17,25 @@
     --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.08);
     --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.1);
     --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.12);
+    color-scheme: light !important;
 }
 
+/* Force light mode - disable dark mode completely */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light !important;
+    }
+}
+
+/* Override any dark mode classes that might be applied */
 body.dark-mode {
-    --light-bg: #1e293b;
-    --card-bg: rgba(30, 41, 59, 0.95);
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-light: #94a3b8;
-    --border-light: rgba(248, 113, 113, 0.1);
+    --light-bg: #f0f9ff !important;
+    --card-bg: rgba(255, 255, 255, 0.95) !important;
+    --text-primary: #1e293b !important;
+    --text-secondary: #64748b !important;
+    --text-light: #94a3b8 !important;
+    --border-light: rgba(15, 23, 42, 0.08) !important;
+    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
 }
 
 * {
@@ -48,7 +58,7 @@ body {
 }
 
 body.dark-mode {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
 }
 
 a {

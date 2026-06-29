@@ -10,6 +10,14 @@
     --text-secondary: #64748b;
     --text-light: #94a3b8;
     --border-light: rgba(15, 23, 42, 0.08);
+    color-scheme: light !important;
+}
+
+/* Force light mode - disable dark mode completely */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light !important;
+    }
 }
 
 * {
