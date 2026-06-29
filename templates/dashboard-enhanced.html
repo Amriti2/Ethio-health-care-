@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Dashboard - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard-enhanced.js') }}"></script>
+    <style>
+        .dashboard-hero {
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .hero-content h1 {
+            font-size: 2.4rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-box {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-green);
+        }
+
+        .stat-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.2rem;
+            color: var(--primary-blue);
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box.pending .stat-number {
+            color: #f59e0b;
+        }
+
+        .stat-box.pending::before {
+            background: #f59e0b;
+        }
+
+        .stat-box.approved .stat-number {
+            color: #10b981;
+        }
+
+        .stat-box.approved::before {
+            background: #10b981;
+        }
+
+        .stat-box.verified .stat-number {
+            color: #06b6d4;
+        }
+
+        .stat-box.verified::before {
+            background: #06b6d4;
+        }
+
+        .stat-percentage {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .flashes {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            color: #047857;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            background: rgba(11, 73, 119, 0.05);
+            border-radius: 12px;
+            border: 1px dashed var(--border-light);
+        }
+
+        .dashboard-actions-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .dashboard-actions-bar a {
+            padding: 0.8rem 1.3rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .jobs-manage-btn {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #0ea5e9 100%);
+            color: white;
+        }
+
+        .jobs-public-btn {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span> 🏥</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/dashboard/jobs">Jobs</a></li>
+            <li><a href="#" onclick="toggleDarkMode()" class="theme-toggle" title="Toggle Dark Mode">🌙</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="dashboard-page">
+        <!-- Dashboard Hero Section -->
+        <section class="dashboard-hero">
+            <div class="hero-content">
+                <h1>Professional CEO View</h1>
+                <p>Manage applications, track candidates, and build your elite healthcare team.</p>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <span class="stat-label">Total</span>
+                    <strong class="stat-number">{{ stats.total }}</strong>
+                    <span class="stat-percentage">{{ stats.recent_applications }} this week</span>
+                </div>
+                <div class="stat-box pending">
+                    <span class="stat-label">Pending</span>
+                    <strong class="stat-number">{{ stats.pending }}</strong>
+                </div>
+                <div class="stat-box approved">
+                    <span class="stat-label">Approved</span>
+                    <strong class="stat-number">{{ stats.approved }}</strong>
+                </div>
+                <div class="stat-box verified">
+                    <span class="stat-label">Verified</span>
+                    <strong class="stat-number">{{ stats.verified }}</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <section class="flashes">
+            {% for message in messages %}
+            <div class="flash-success">✓ {{ message }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
+
+        <section class="dashboard-actions-bar">
+            <a href="/dashboard/jobs" class="jobs-manage-btn">🧩 Manage Job Posts</a>
+            <a href="/jobs" class="jobs-public-btn" target="_blank">🌐 View Public Job Page</a>
+        </section>
+
+        <!-- Analytics Charts -->
+        <section class="charts-container">
+            <div class="chart-card">
+                <h3>📊 Status Distribution</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>📈 Experience Levels</h3>
+                <canvas id="experienceChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Metrics Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Approval Rate</h3>
+                        <div class="stat-number">{{ stats.approval_rate }}%</div>
+                        <div class="stat-change">{{ stats.approved }} of {{ stats.total }} approved</div>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Pending Review</h3>
+                        <div class="stat-number">{{ stats.pending }}</div>
+                        <div class="stat-change">Waiting for action</div>
+                    </div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters & Actions -->
+        <section class="dashboard-filters">
+            <div class="filter-group">
+                <input type="text" class="search-box" id="searchInput" placeholder="🔍 Search applicants..." onkeyup="applyFilters()">
+                <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Statuses</option>
+                    <option value="pending">⏳ Pending</option>
+                    <option value="approved">✅ Approved</option>
+                    <option value="verification_sent">📧 Verification Sent</option>
+                    <option value="verified">🔒 Verified</option>
+                    <option value="rejected">❌ Rejected</option>
+                </select>
+                <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+                    <option value="recent">Recent</option>
+                    <option value="rating">Top Rated</option>
+                    <option value="name">Alphabetical</option>
+                    <option value="experience">Most Experienced</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Export & Batch Actions -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <a href="/api/export-csv" class="export-btn" style="padding: 0.8rem 1.5rem; background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%); color: white; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                📥 Export to CSV
+            </a>
+            <button class="filter-toggle" onclick="toggleSelectMode()" style="padding: 0.8rem 1.5rem;">
+                ✓ Batch Select
+            </button>
+        </div>
+
+        <!-- Applications Grid -->
+        {% if applications %}
+        <section class="applications-grid" id="applicationsGrid">
+            {% for app in applications %}
+            <article class="app-box">
+                <!-- Checkbox for batch selection -->
+                <div style="display: none;" class="app-checkbox-container">
+                    <input type="checkbox" class="app-checkbox" value="{{ app.id }}" onchange="updateBatchCount()">
+                </div>
+
+                <!-- App Header -->
+                <div class="app-header">
+                    <div class="app-info">
+                        <h3>{{ app.name }}</h3>
+                        <p class="app-role">{{ app.role }}</p>
+                    </div>
+                    <span class="status-badge status-{{ app.status|replace('_', '-') }}">
+                        {% if app.status == 'pending' %}⏳{% elif app.status == 'approved' %}✅{% elif app.status == 'verification_sent' %}📧{% elif app.status == 'verified' %}🔒{% elif app.status == 'rejected' %}❌{% endif %}
+                        {{ app.status|replace('_', ' ')|title }}
+                    </span>
+                </div>
+
+                <!-- Rating Section -->
+                <div class="rating-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600; color: var(--text-primary);">Rating</span>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ app.rating if app.rating else 'Not rated' }}</span>
+                    </div>
+                    <form method="POST" action="/dashboard/app/{{ app.id }}" style="display: flex; gap: 0.5rem;">
+                        <input type="hidden" name="action" value="rate">
+                        <select name="rating" style="flex: 1; padding: 0.6rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.9rem;">
+                            <option value="">Select rating...</option>
+                            <option value="1">⭐ Poor</option>
+                            <option value="2">⭐⭐ Fair</option>
+                            <option value="3">⭐⭐⭐ Good</option>
+                            <option value="4">⭐⭐⭐⭐ Very Good</option>
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                        </select>
+                        <button type="submit" class="btn-small" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);">💾</button>
+                    </form>
+                </div>
+
+                <!-- App Details -->
+                <div class="app-details">
+                    <div class="detail-row">
+                        <span class="label">Email</span>
+                        <span class="value">{{ app.email }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Phone</span>
+                        <span class="value">{{ app.phone }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Experience</span>
+                        <span class="value">{{ app.experience_years }} years</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Shift</span>
+                        <span class="value">{{ app.shift_preference }}</span>
+                    </div>
+                </div>
+
+                <!-- Interview Section -->
+                {% if app.interview %}
+                <div class="interview-section">
+                    <strong>📅 Interview Scheduled</strong>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        📆 {{ app.interview.scheduled_date }} at {{ app.interview.scheduled_time }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="interview-section">
+                    <form method="POST" action="/dashboard/app/{{ app.id }}" style="display: grid; gap: 0.5rem;">
+                        <input type="hidden" name="action" value="schedule_interview">
+                        <strong style="margin-bottom: 0.5rem;">📅 Schedule Interview</strong>
+                        <input type="date" name="interview_date" required style="font-size: 0.9rem;">
+                        <input type="time" name="interview_time" required style="font-size: 0.9rem;">
+                        <input type="email" name="interviewer_email" placeholder="Interviewer email" style="font-size: 0.9rem;">
+                        <button type="submit" class="btn-small" style="background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); grid-column: 1 / -1;">Schedule</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Assigned Email -->
+                {% if app.account_email %}
+                <div class="assigned-email">
+                    <strong>👤 Assigned Email:</strong> {{ app.account_email }}
+                </div>
+                {% endif %}
+
+                <!-- App Actions -->
+                <div class="app-actions">
+                    <!-- Assign Email -->
+                    <form method="POST" action="/dashboard/app/{{ app.id }}" class="action-form">
+                        <input type="hidden" name="action" value="assign_email">
+                        <input type="email" name="account_email" placeholder="Assign account email..." required>
+                        <button type="submit" class="btn-small" style="background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);">Save Email</button>
+                    </form>
+
+                    <!-- Message Form -->
+                    <form method="POST" action="/dashboard/app/{{ app.id }}" class="action-form">
+                        <input type="hidden" name="action" value="send_message">
+                        <textarea name="ceo_message" placeholder="Send message to applicant..." class="action-form" style="grid-column: 1 / -1; padding: 0.7rem 0.9rem; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.85rem; background: var(--card-bg); color: var(--text-primary); resize: none; min-height: 50px;"></textarea>
+                        <button type="submit" class="btn-small btn-message" style="grid-column: 1 / -1; background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);">💬 Send Message</button>
+                    </form>
+
+                    <!-- Action Buttons -->
+                    <div class="action-row-3">
+                        <form method="POST" action="/dashboard/app/{{ app.id }}">
+                            <input type="hidden" name="action" value="send_verification">
+                            <button type="submit" class="btn-small btn-verify" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">🔗 Verify</button>
+                        </form>
+                        <form method="POST" action="/dashboard/app/{{ app.id }}">
+                            <input type="hidden" name="action" value="accept">
+                            <button type="submit" class="btn-small" style="background: linear-gradient(135deg, var(--primary-green) 0%, #059669 100%);">✅ Approve</button>
+                        </form>
+                        <form method="POST" action="/dashboard/app/{{ app.id }}">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn-small btn-danger" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">❌ Reject</button>
+                        </form>
+                    </div>
+
+                    <!-- View CV & Delete -->
+                    <div class="action-row-2">
+                        <a href="/uploads/{{ app.cv }}?download=0" target="_blank" class="btn-small" style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%); text-align: center;">📄 View CV</a>
+                        <form method="POST" action="/dashboard/app/{{ app.id }}">
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" class="btn-small btn-danger" onclick="return confirm('Delete this application?')" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">🗑️ Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Messages Log -->
+                {% if app.messages %}
+                <div class="message-log">
+                    <strong>📬 Message History</strong>
+                    <div style="margin-top: 0.8rem; max-height: 150px; overflow-y: auto;">
+                        {% for msg in app.messages %}
+                        <div class="message-item">
+                            <strong>{{ msg.from }}:</strong> {{ msg.message }}
+                            <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.3rem;">{{ msg.sent_at|datetimeformat }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </section>
+        {% else %}
+        <section class="no-results">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+            <p>No applications found. <a href="/apply" style="color: var(--primary-green); font-weight: 600;">Start reviewing applications!</a></p>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Load dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Filter Applications
+        function applyFilters() {
+            const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const status = document.getElementById('statusFilter')?.value || '';
+            const sort = document.getElementById('sortFilter')?.value || 'recent';
+
+            // In a real application, you'd reload the page with these filters
+            // For now, this is a placeholder
+            const url = new URLSearchParams();
+            if (search) url.append('search', search);
+            if (status) url.append('status', status);
+            url.append('sort', sort);
+            
+            window.location.href = `/dashboard?${url.toString()}`;
+        }
+
+        // Batch Selection Mode
+        function toggleSelectMode() {
+            const checkboxes = document.querySelectorAll('.app-checkbox-container');
+            checkboxes.forEach(cb => {
+                cb.style.display = cb.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        // Update batch count
+        function updateBatchCount() {
+            const selected = document.querySelectorAll('.app-checkbox:checked').length;
+            if (selected > 0) {
+                // Show batch actions
+                console.log(`${selected} items selected`);
+            }
+        }
+
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartData = {{ chart_data|tojson }};
+            const stats = {{ stats|tojson }};
+
+            // Status Distribution Chart
+            if (document.getElementById('statusChart')) {
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(chartData.status_distribution),
+                        datasets: [{
+                            data: Object.values(chartData.status_distribution),
+                            backgroundColor: ['#f59e0b', '#10b981', '#06b6d4', '#ef4444', '#8b5cf6'],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Experience Distribution Chart
+            if (document.getElementById('experienceChart')) {
+                const expCtx = document.getElementById('experienceChart').getContext('2d');
+                new Chart(expCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(stats.experience_levels),
+                        datasets: [{
+                            label: 'Number of Applicants',
+                            data: Object.values(stats.experience_levels),
+                            backgroundColor: [
+                                '#06b6d4',
+                                '#3b82f6',
+                                '#10b981',
+                                '#f59e0b'
+                            ],
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

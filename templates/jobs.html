@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Job - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    <style>
+        .jobs-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem 5rem;
+        }
+
+        .jobs-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            border-radius: 12px;
+        }
+
+        .jobs-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .jobs-hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .search-bar button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .jobs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .job-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .job-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--secondary-teal));
+        }
+
+        .job-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .job-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .job-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .job-role {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            color: var(--primary-green);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .job-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .job-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            line-height: 1.6;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .job-footer {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .apply-btn {
+            flex: 1;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .view-btn {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .no-jobs {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(11, 73, 119, 0.05);
+            border: 1px dashed var(--border-light);
+            border-radius: 12px;
+            color: var(--text-secondary);
+        }
+
+        .no-jobs-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .jobs-hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .jobs-container {
+                grid-template-columns: 1fr;
+            }
+
+            .job-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span> 🏥</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/jobs">Find a Job</a></li>
+            <li><a href="/apply">Direct Apply</a></li>
+            <li><a href="/login">Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="jobs-page">
+        <section class="jobs-hero">
+            <h1>🔍 Find Your Perfect Healthcare Role</h1>
+            <p>Browse open positions at Ethio Health Care and apply to the job that matches your skills and passion.</p>
+            
+            <form method="GET" class="search-bar">
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search by job title, role, or description..." 
+                    value="{{ search_query }}"
+                >
+                <button type="submit">Search</button>
+            </form>
+        </section>
+
+        {% if jobs %}
+        <section class="jobs-container">
+            {% for job in jobs %}
+            <article class="job-card">
+                <div class="job-header">
+                    <h3 class="job-title"><a href="/job/{{ job.id }}">{{ job.title }}</a></h3>
+                    <span class="job-role">{{ job.role }}</span>
+                </div>
+
+                <div class="job-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">💰 Salary</span>
+                        <span class="meta-value">{{ job.salary or 'Competitive' }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">📍 Location</span>
+                        <span class="meta-value">{{ job.location or 'Various' }}</span>
+                    </div>
+                </div>
+
+                <div class="job-description">
+                    {{ job.description }}
+                </div>
+
+                <div class="job-footer">
+                    <a href="/apply-job/{{ job.id }}" class="apply-btn">Apply Now</a>
+                    <a href="/job/{{ job.id }}" class="view-btn">View Details →</a>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+        {% else %}
+        <section class="no-jobs">
+            <div class="no-jobs-icon">📭</div>
+            <h2>No Jobs Posted Yet</h2>
+            <p>Check back soon for new opportunities, or apply directly below!</p>
+            <a href="/apply" style="display: inline-block; margin-top: 1rem; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%); color: white; border-radius: 8px; font-weight: 700; text-decoration: none;">Apply Directly</a>
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>

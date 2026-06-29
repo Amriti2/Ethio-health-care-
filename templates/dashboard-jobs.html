@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Jobs - CEO Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    <style>
+        .jobs-admin-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, rgba(11, 73, 119, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-header h1 {
+            color: var(--primary-blue);
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-actions a {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-btn {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border-light);
+        }
+
+        .jobs-admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .post-job-card,
+        .job-list-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .post-job-card h2,
+        .job-list-card h2 {
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .post-job-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .post-job-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .job-list {
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .job-item {
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 1.5rem;
+            background: rgba(11, 73, 119, 0.03);
+            display: grid;
+            gap: 1rem;
+        }
+
+        .job-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .job-item-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-bottom: 0.4rem;
+        }
+
+        .job-item-role {
+            display: inline-block;
+            padding: 0.35rem 0.8rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary-green);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .job-item-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .job-item-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .job-item-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .job-item-actions a,
+        .job-item-actions button {
+            padding: 0.7rem 1.1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .view-job-btn {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .delete-job-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .flash-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--primary-green);
+            padding: 1rem 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            border: 1px dashed var(--border-light);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 1000px) {
+            .jobs-admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .jobs-admin-page {
+                padding: 1.2rem;
+            }
+
+            .admin-header {
+                align-items: flex-start;
+            }
+
+            .admin-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .job-item-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="jobs-admin-page">
+        <div class="admin-header">
+            <div>
+                <h1>CEO Job Management</h1>
+                <p style="margin: 0.4rem 0 0; color: var(--text-secondary);">Post openings, review active listings, and keep the careers page updated.</p>
+            </div>
+            <div class="admin-actions">
+                <a href="/dashboard" class="dashboard-btn">Back to Dashboard</a>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="jobs-admin-grid">
+            <section class="post-job-card">
+                <h2>Post a New Job</h2>
+                <form method="POST">
+                    <input type="hidden" name="action" value="post">
+
+                    <div class="form-group">
+                        <label for="title">Job Title</label>
+                        <input id="title" type="text" name="title" required placeholder="e.g. Senior Registered Nurse">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Role / Department</label>
+                        <select id="role" name="role" required>
+                            <option value="">Select role</option>
+                            <option>Nursing</option>
+                            <option>Physician</option>
+                            <option>Pharmacy</option>
+                            <option>Laboratory</option>
+                            <option>Administration</option>
+                            <option>Support Staff</option>
+                            <option>Management</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary">Salary Range</label>
+                        <input id="salary" type="text" name="salary" placeholder="e.g. 25,000 - 40,000 ETB/month">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input id="location" type="text" name="location" placeholder="e.g. Addis Ababa">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Job Description</label>
+                        <textarea id="description" name="description" required placeholder="Describe the responsibilities, requirements, and what makes this role attractive."></textarea>
+                    </div>
+
+                    <button type="submit" class="post-job-btn">Publish Job</button>
+                </form>
+            </section>
+
+            <section class="job-list-card">
+                <h2>Active Job Listings</h2>
+
+                {% if jobs %}
+                    <div class="job-list">
+                        {% for job in jobs|sort(attribute='posted_at', reverse=True) %}
+                            <article class="job-item">
+                                <div class="job-item-header">
+                                    <div>
+                                        <div class="job-item-title">{{ job.title }}</div>
+                                        <span class="job-item-role">{{ job.role }}</span>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                        {{ job.applications|length if job.applications else 0 }} applications
+                                    </div>
+                                </div>
+
+                                <div class="job-item-meta">
+                                    <div><strong>Salary:</strong> {{ job.salary or 'Competitive' }}</div>
+                                    <div><strong>Location:</strong> {{ job.location or 'Various' }}</div>
+                                    <div><strong>Posted:</strong> {{ job.posted_at }}</div>
+                                </div>
+
+                                <div class="job-item-description">{{ job.description }}</div>
+
+                                <div class="job-item-actions">
+                                    <a class="view-job-btn" href="/job/{{ job.id }}" target="_blank">Preview</a>
+                                    <a class="view-job-btn" href="/apply-job/{{ job.id }}" target="_blank">Open Apply Page</a>
+                                    <form method="POST" onsubmit="return confirm('Delete this job posting?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="job_id" value="{{ job.id }}">
+                                        <button type="submit" class="delete-job-btn">Delete</button>
+                                    </form>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <h3 style="margin-top: 0; color: var(--primary-blue);">No jobs posted yet</h3>
+                        <p>Create the first listing to populate the public Find a Job page.</p>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+</body>
+</html>

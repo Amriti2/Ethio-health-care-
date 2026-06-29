@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ job.title }} - Ethio Health Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    <style>
+        .job-detail-page {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .job-header-detail {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .job-title-detail {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .job-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-block {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .job-description-detail {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .cta-section h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .cta-section p {
+            margin-bottom: 1.5rem;
+            opacity: 0.95;
+            font-size: 1rem;
+        }
+
+        .apply-btn-large {
+            padding: 1rem 2.5rem;
+            background: white;
+            color: var(--primary-green);
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .apply-btn-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .job-title-detail {
+                font-size: 1.5rem;
+            }
+
+            .job-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span> 🏥</div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/jobs">Find a Job</a></li>
+            <li><a href="/apply">Direct Apply</a></li>
+            <li><a href="/login">Admin</a></li>
+        </ul>
+    </nav>
+    <main class="job-detail-page">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/jobs">Jobs</a>
+            <span>/</span>
+            <span>{{ job.title }}</span>
+        </div>
+
+        <div class="job-header-detail">
+            <h1 class="job-title-detail">{{ job.title }}</h1>
+            <p style="font-size: 1.1rem; color: var(--text-secondary);">{{ job.role }} • {% if job.posted_at %}Recently posted{% else %}Posting date unavailable{% endif %}</p>
+        </div>
+
+        <div class="job-info-grid">
+            <div class="info-block">
+                <div class="info-label">📍 Location</div>
+                <div class="info-value">{{ job.location or 'Various' }}</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">💰 Salary Range</div>
+                <div class="info-value">{{ job.salary or 'Competitive' }}</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">🏢 Department</div>
+                <div class="info-value">{{ job.role }}</div>
+            </div>
+        </div>
+
+        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">Job Description</h2>
+        <div class="job-description-detail">{{ job.description }}</div>
+
+        <div class="cta-section">
+            <h2>Ready to Apply?</h2>
+            <p>Join our team and make a difference in healthcare. Apply now to be considered for this position.</p>
+            <a href="/apply-job/{{ job.id }}" class="apply-btn-large">Apply to This Position</a>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="/jobs" style="color: var(--primary-green); font-weight: 600; text-decoration: none;">← Back to All Jobs</a>
+        </div>
+    </main>
+</body>
+</html>

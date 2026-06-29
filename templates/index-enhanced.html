@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethio Health Care - Join Our Elite Team</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-style.css') }}">
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+        }
+
+        .landing-hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 3rem;
+            align-items: center;
+            padding: 6rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .landing-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: glow 4s ease-in-out infinite;
+        }
+
+        .landing-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -15%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .landing-copy {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .landing-copy h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .landing-copy p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            max-width: 550px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .hero-btn {
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .hero-btn-primary {
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-teal) 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .hero-btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .hero-btn-secondary {
+            background: rgba(14, 116, 144, 0.1);
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .hero-btn-secondary:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-4px);
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .role-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .role-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .role-card h3 {
+            font-size: 1.1rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .features-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 3rem;
+            margin: 4rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            gap: 1rem;
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        .feature-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .feature-item:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .feature-item:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .feature-content h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+
+        .cta-section {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+            border-radius: 12px;
+            margin: 3rem 0;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .visual-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .visual-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .visual-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .visual-card h3 {
+            font-size: 1.8rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .visual-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .poster-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .poster-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .poster-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(16, 185, 129, 0.45);
+            transition: all 0.3s ease;
+        }
+
+        .poster-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .poster-copy h3 {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 0.8rem;
+            font-weight: 900;
+        }
+
+        .poster-copy p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .landing-hero {
+                grid-template-columns: 1fr;
+                min-height: auto;
+                padding: 4rem 2rem;
+            }
+
+            .landing-copy h1 {
+                font-size: 2.5rem;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 768px) {
+            .landing-copy h1 {
+                font-size: 2rem;
+            }
+
+            .landing-copy p {
+                font-size: 1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .features-section {
+                padding: 1.5rem;
+            }
+
+            .cta-section {
+                padding: 1.5rem;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="brand">Ethio<span>Health</span> 🏥</div>
+        <ul class="nav-links">
+            <li><a href="/jobs">Jobs</a></li>
+            <li><a href="/apply?role=nurse">Apply</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="/login">Admin</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Landing Hero -->
+        <section class="landing-hero">
+            <div class="landing-copy">
+                <h1>Join Ethio Health Care's Elite Team</h1>
+                <p>We're building the future of healthcare by bringing together passionate professionals who want to make a real difference in people's lives.</p>
+                
+                <div class="hero-buttons">
+                    <a href="/jobs" class="hero-btn hero-btn-secondary">
+                        💼 Browse Jobs
+                    </a>
+                    <a href="/apply?role=nurse" class="hero-btn hero-btn-primary">
+                        🚀 Start Your Journey
+                    </a>
+                    <a href="#about" class="hero-btn hero-btn-secondary">
+                        Learn More →
+                    </a>
+                </div>
+
+                <div class="roles-grid">
+                    <a href="/apply?role=nurse" class="role-card" style="text-decoration: none;">
+                        <div class="role-icon">👩‍⚕️</div>
+                        <h3>Nurse</h3>
+                        <p>Compassionate care providers</p>
+                    </a>
+                    <a href="/apply?role=doctor" class="role-card" style="text-decoration: none;">
+                        <div class="role-icon">🏥</div>
+                        <h3>Doctor</h3>
+                        <p>Expert medical professionals</p>
+                    </a>
+                    <a href="/apply?role=caregiver" class="role-card" style="text-decoration: none;">
+                        <div class="role-icon">🤝</div>
+                        <h3>Care Giver</h3>
+                        <p>Dedicated support specialists</p>
+                    </a>
+                    <a href="/apply?role=midwife" class="role-card" style="text-decoration: none;">
+                        <div class="role-icon">🤰</div>
+                        <h3>Midwife</h3>
+                        <p>Maternal health experts</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="poster-card">
+                <img src="{{ url_for('static', filename='css/images/poster.png') }}" alt="Ethio Health Care Recruitment Poster">
+                <div class="poster-copy">
+                    <h3>Ready to Make an Impact?</h3>
+                    <p>Follow the recruitment poster and start your application in minutes. We review every serious application quickly.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="about" class="features-section">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--primary-blue);">Why Choose Ethio Health Care?</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-content">
+                        <h3>Continuous Learning</h3>
+                        <p>Access to professional development programs and training opportunities to grow your skills.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-content">
+                        <h3>Global Impact</h3>
+                        <p>Work with a diverse team that serves patients across different communities and cultures.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💪</div>
+                    <div class="feature-content">
+                        <h3>Career Growth</h3>
+                        <p>Clear advancement paths and leadership opportunities for motivated professionals.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-content">
+                        <h3>Excellence Culture</h3>
+                        <p>Work in an environment that values quality, innovation, and patient care above all.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section class="features-section">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem; color: var(--primary-blue);">Our Benefits Package</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-content">
+                        <h3>Competitive Compensation</h3>
+                        <p>Market-leading salaries and performance bonuses based on your expertise.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">❤️</div>
+                    <div class="feature-content">
+                        <h3>Health Insurance</h3>
+                        <p>Comprehensive medical, dental, and vision coverage for you and your family.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎉</div>
+                    <div class="feature-content">
+                        <h3>Flexible Schedule</h3>
+                        <p>Work-life balance with flexible hours and generous time off policies.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <div class="feature-content">
+                        <h3>Career Development</h3>
+                        <p>Mentorship programs and opportunities to attend industry conferences.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2>Ready to Transform Your Career?</h2>
+            <p>Join thousands of healthcare professionals making a real difference every day. Apply now and start your journey with Ethio Health Care.</p>
+            <a href="/apply" class="hero-btn hero-btn-primary">
+                Apply Now - It Only Takes 5 Minutes!
+            </a>
+        </section>
+    </main>
+
+    <nav style="background: var(--text-primary); color: white; margin-top: 4rem; padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center;">
+        <div class="brand" style="color: white;">
+            <span style="color: var(--secondary-teal);">Ethio</span>Health 🏥
+        </div>
+        <div style="display: flex; gap: 2rem; font-size: 0.9rem;">
+            <a href="/login" style="color: rgba(255,255,255,0.8); text-decoration: none;">Admin Portal</a>
+            <span style="opacity: 0.6;">© 2024 Ethio Health Care. All rights reserved.</span>
+        </div>
+    </nav>
+
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Dark mode toggle
+        const themeToggle = document.querySelector('.theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            });
+        }
+
+        // Load dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Add scroll animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
