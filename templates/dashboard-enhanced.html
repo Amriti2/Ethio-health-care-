@@ -588,7 +588,7 @@
                 </div>
 
                 <!-- Hidden data attributes for modal -->
-                <div style="display: none;" class="app-full-data" data-app-id="{{ app.id }}" data-app-json="{{ app | tojson | e }}"></div>
+                <div style="display: none;" class="app-full-data" data-app-id="{{ app.id }}" data-app-json='{{ app | tojson }}'></div>
             </article>
             {% endfor %}
         </section>
