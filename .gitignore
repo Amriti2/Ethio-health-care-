@@ -14,3 +14,5 @@ venv/
 uploads/
 data/applications.json
 .DS_Store
+firebase-key.json
+.env
