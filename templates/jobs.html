@@ -296,7 +296,7 @@
                 </div>
 
                 <div class="job-description">
-                    {{ job.description }}
+                    {{ job.summary or job.description or 'No summary provided.' }}
                 </div>
 
                 <div class="job-footer">

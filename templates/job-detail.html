@@ -172,8 +172,8 @@
             </div>
         </div>
 
-        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">Job Description</h2>
-        <div class="job-description-detail">{{ job.description }}</div>
+        <h2 style="color: var(--primary-blue); margin-bottom: 1rem;">Job Summary</h2>
+        <div class="job-description-detail">{{ job.summary or job.description or 'No summary provided.' }}</div>
 
         <div class="cta-section">
             <h2>Ready to Apply?</h2>

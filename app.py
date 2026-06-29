@@ -960,7 +960,6 @@ def manage_jobs():
         
         if action == "post":
             title = request.form.get("title", "").strip()
-            description = request.form.get("description", "").strip()
             role = request.form.get("role", "").strip()
             salary = request.form.get("salary", "").strip()
             location = request.form.get("location", "").strip()
@@ -979,11 +978,10 @@ def manage_jobs():
                     company_logo_filename = f"{int(time.time())}_{safe_logo}"
                     logo_file.save(os.path.join(LOGO_FOLDER, company_logo_filename))
 
-            if title and description and role and company:
+            if title and role and company:
                 job = {
                     "id": str(uuid.uuid4()),
                     "title": title,
-                    "description": description,
                     "role": role,
                     "salary": salary,
                     "location": location,
