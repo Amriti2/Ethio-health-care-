@@ -31,6 +31,9 @@ APPLICATIONS_FILE = os.path.join(DATA_FOLDER, "applications.json")
 JOBS_FILE = os.path.join(DATA_FOLDER, "jobs.json")
 
 ALLOWED_EXTENSIONS = {"pdf"}
+ALLOWED_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+LOGO_FOLDER = os.path.join(os.path.dirname(__file__), "static", "logos")
+os.makedirs(LOGO_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
@@ -961,8 +964,18 @@ def manage_jobs():
             role = request.form.get("role", "").strip()
             salary = request.form.get("salary", "").strip()
             location = request.form.get("location", "").strip()
-            
-            if title and description and role:
+            company = request.form.get("company", "").strip()
+
+            company_logo_filename = ""
+            logo_file = request.files.get("company_logo")
+            if logo_file and logo_file.filename:
+                ext = logo_file.filename.rsplit(".", 1)[-1].lower()
+                if ext in ALLOWED_LOGO_EXTENSIONS:
+                    safe_logo = secure_filename(logo_file.filename)
+                    company_logo_filename = f"{int(time.time())}_{safe_logo}"
+                    logo_file.save(os.path.join(LOGO_FOLDER, company_logo_filename))
+
+            if title and description and role and company:
                 job = {
                     "id": str(uuid.uuid4()),
                     "title": title,
@@ -970,6 +983,8 @@ def manage_jobs():
                     "role": role,
                     "salary": salary,
                     "location": location,
+                    "company": company,
+                    "company_logo": company_logo_filename,
                     "posted_at": int(time.time()),
                     "applications": []
                 }
