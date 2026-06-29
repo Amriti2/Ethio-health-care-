@@ -4,6 +4,7 @@ import time
 import json
 import uuid
 import smtplib
+import threading
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from werkzeug.utils import secure_filename
@@ -1282,11 +1283,12 @@ def apply_to_job(job_id):
                     # Set success message BEFORE sending email
                     success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
                     
-                    # Send confirmation email (wrapped in try-except to not block application save)
-                    try:
-                        print(f"📧 Sending confirmation email to {email}...")
-                        subject = f"Application Received - {job.get('title')}"
-                        body = f"""
+                    # Send confirmation email in background thread (non-blocking)
+                    def send_email_async():
+                        try:
+                            print(f"📧 Sending confirmation email to {email}...")
+                            subject = f"Application Received - {job.get('title')}"
+                            body = f"""
 Hello {name},
 
 Thank you for applying to the {job.get('title')} position at Ethio Health Care!
@@ -1296,10 +1298,15 @@ We have received your application and will review it shortly. You will hear from
 Best regards,
 Ethio Health Care
 """
-                        send_email(email, subject, body)
-                        print(f"✅ Confirmation email sent")
-                    except Exception as email_exc:
-                        print(f"⚠️ Email failed (but application was saved): {str(email_exc)}")
+                            send_email(email, subject, body)
+                            print(f"✅ Confirmation email sent")
+                        except Exception as email_exc:
+                            print(f"⚠️ Email failed (but application was saved): {str(email_exc)}")
+                    
+                    # Start email sending in background thread so it doesn't block response
+                    email_thread = threading.Thread(target=send_email_async, daemon=True)
+                    email_thread.start()
+                    
                     
                     
         except Exception as exc:

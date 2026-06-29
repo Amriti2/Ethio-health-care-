@@ -341,6 +341,33 @@
                 fileName.textContent = '✅ ' + e.target.files[0].name;
             }
         });
+
+        // Handle form submission with loading state
+        const form = document.querySelector('form');
+        const submitBtn = document.querySelector('.submit-btn');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Disable submit button and show loading state
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = '⏳ Submitting...';
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+                
+                // Set a timeout to re-enable button after 30 seconds (safety net)
+                const timeoutId = setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                    alert('Application submission is taking longer than expected. Please check your connection and try again.');
+                }, 30000);
+                
+                // If form submission succeeds, the page will redirect, so we don't need to clear timeout
+                // But if it fails, the server will send back the form which will re-enable the button
+            });
+        }
     </script>
 </body>
 </html>
