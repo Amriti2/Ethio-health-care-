@@ -19,9 +19,12 @@
         color-scheme: light !important;
     }
     html {
-        background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
+        background: #f0f9ff linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%) !important;
         background-attachment: fixed !important;
         background-repeat: no-repeat !important;
+        background-size: cover !important;
+        -webkit-background-attachment: fixed !important;
+        -webkit-background-size: cover !important;
     }
     body {
         background: transparent !important;
@@ -36,10 +39,13 @@
 }
 
 html {
-    background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+    background: #f0f9ff linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
     background-attachment: fixed;
     background-repeat: no-repeat;
+    background-size: cover;
     height: 100%;
+    -webkit-background-attachment: fixed;
+    -webkit-background-size: cover;
 }
 
 body {
