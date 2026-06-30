@@ -105,6 +105,7 @@ def load_applications():
             apps_data = ref.get()
             
             if apps_data is None:
+                print("⚠️ Firebase is empty - checking local JSON...")
                 # No data in Firebase yet - check local JSON
                 if os.path.exists(APPLICATIONS_FILE):
                     try:
@@ -119,25 +120,25 @@ def load_applications():
             # Firebase returns dict, convert to list
             if isinstance(apps_data, dict):
                 applications = list(apps_data.values())
-                print(f"✅ Loaded {len(applications)} applications from Firebase")
+                print(f"✅ SUCCESS: Loaded {len(applications)} applications from Firebase")
                 return applications
             
             return apps_data if isinstance(apps_data, list) else []
         
         except Exception as e:
             # If Firebase fails (404 or other error), fall back to JSON
-            print(f"⚠️ Firebase error: {e} - using local JSON fallback")
+            print(f"❌ Firebase error: {e} - using local JSON fallback")
             if os.path.exists(APPLICATIONS_FILE):
                 try:
                     with open(APPLICATIONS_FILE, 'r') as f:
                         applications = json.load(f)
-                        print(f"✅ Loaded {len(applications)} applications from local JSON (Firebase fallback)")
+                        print(f"⚠️ Loaded {len(applications)} applications from local JSON (Firebase failed)")
                         return applications if isinstance(applications, list) else []
-                except:
-                    pass
+                except Exception as json_err:
+                    print(f"❌ JSON load error: {json_err}")
             return []
     
-    # Firebase disabled - use JSON
+    # Firebase disabled - use JSON only
     if os.path.exists(APPLICATIONS_FILE):
         try:
             with open(APPLICATIONS_FILE, 'r') as f:
@@ -145,15 +146,18 @@ def load_applications():
                 print(f"✅ Loaded {len(applications)} applications from local JSON")
                 return applications if isinstance(applications, list) else []
         except Exception as e:
-            print(f"⚠️ Error loading applications from JSON: {e}")
+            print(f"❌ Error loading applications from JSON: {e}")
+    
+    print("⚠️ No applications found")
     return []
 
 
 def save_applications(applications):
     """Save applications to Firebase Realtime Database with JSON fallback"""
-    saved = False
+    saved_firebase = False
+    saved_json = False
     
-    # Try Firebase first if enabled
+    # Try Firebase FIRST - this is our primary persistent storage
     if FIREBASE_ENABLED:
         try:
             # Convert list to dict with app IDs as keys for Firebase
@@ -162,21 +166,26 @@ def save_applications(applications):
             ref = db.reference('applications')
             ref.update(apps_dict)
             
-            print(f"✅ Saved {len(applications)} applications to Firebase")
-            saved = True
+            print(f"✅ SUCCESS: Saved {len(applications)} applications to Firebase")
+            saved_firebase = True
         
         except Exception as e:
-            print(f"⚠️ Firebase save failed: {e} - using JSON fallback")
+            print(f"❌ CRITICAL: Firebase save failed: {e}")
+    else:
+        print(f"⚠️ WARNING: Firebase is disabled - applications may not persist on Render!")
     
-    # Always also save to JSON as backup/fallback
+    # Always also save to JSON as local backup (temporary storage)
     try:
         os.makedirs(DATA_FOLDER, exist_ok=True)
         with open(APPLICATIONS_FILE, 'w') as f:
             json.dump(applications, f, indent=2)
-        print(f"✅ Saved {len(applications)} applications to local JSON")
-        saved = True
+        print(f"✅ Saved {len(applications)} applications to local JSON backup")
+        saved_json = True
     except Exception as e:
         print(f"❌ Error saving to JSON: {e}")
+    
+    # Return success only if Firebase saved successfully (or if we're in dev with Firebase disabled)
+    return saved_firebase or not FIREBASE_ENABLED
     
     return saved
 
@@ -1296,12 +1305,28 @@ def apply_to_job(job_id):
                     
                     
                     # Save application
-                    print(f"📝 Loading and saving applications...")
+                    print(f"\n🔴 SAVING APPLICATION:")
+                    print(f"   Application ID: {application.get('id')}")
+                    print(f"   Name: {name}")
+                    print(f"   Job: {job.get('title')}")
+                    print(f"   Firebase Enabled: {FIREBASE_ENABLED}")
+                    
                     applications = load_applications()
+                    print(f"   Current applications: {len(applications)}")
+                    
                     applications.append(application)
-                    if not save_applications(applications):
-                        print(f"⚠️ Warning: save_applications returned False")
-                    print(f"✅ Applications saved - total: {len(applications)}")
+                    print(f"   Total after append: {len(applications)}")
+                    
+                    save_result = save_applications(applications)
+                    print(f"   Save result: {save_result}")
+                    
+                    if not save_result:
+                        print(f"❌ CRITICAL: Applications save failed!")
+                        if not FIREBASE_ENABLED:
+                            print(f"⚠️ Firebase is disabled - check Render environment variables!")
+                    else:
+                        print(f"✅ Application successfully saved to persistent storage")
+                    print(f"🔴 END SAVING APPLICATION\n")
                     
                     # Set success message BEFORE sending email
                     success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
