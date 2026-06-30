@@ -1132,11 +1132,19 @@ def jobs():
 @app.route("/job/<job_id>", methods=["GET"])
 def view_job(job_id):
     """View single job posting"""
-    job = find_job(job_id)
-    if not job:
+    try:
+        job = find_job(job_id)
+        if not job:
+            return redirect(url_for("jobs"))
+        
+        # Ensure posted_at is present
+        if "posted_at" not in job or not job.get("posted_at"):
+            job["posted_at"] = int(time.time())
+        
+        return render_template("job-detail.html", job=job)
+    except Exception as e:
+        app.logger.error(f"Error viewing job {job_id}: {str(e)}")
         return redirect(url_for("jobs"))
-    
-    return render_template("job-detail.html", job=job)
 
 
 @app.route("/dashboard/jobs", methods=["GET", "POST"])

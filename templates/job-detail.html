@@ -50,8 +50,8 @@
         "price": "{{ job.salary or 'Competitive' }}"
       },
       "employmentType": "{{ job.employment_type or 'FULL_TIME' }}",
-      "datePosted": "{{ job.posted_at | datetimeformat('%Y-%m-%d') }}",
-      "validThrough": "{{ (job.posted_at | datetimeformat('%Y-%m-%d') if job.posted_at else '') }}"
+      "datePosted": "{% if job.posted_at %}{{ job.posted_at|datetimeformat('%Y-%m-%d') }}{% else %}{{ now()|datetimeformat('%Y-%m-%d') }}{% endif %}",
+      "validThrough": "{% if job.posted_at %}{{ job.posted_at|datetimeformat('%Y-%m-%d') }}{% else %}{{ now()|datetimeformat('%Y-%m-%d') }}{% endif %}"
     }
     </script>
     <style>
@@ -229,7 +229,13 @@
             </div>
             <div class="info-block">
                 <div class="info-label">📅 Posted Date</div>
-                <div class="info-value">{{ job.posted_at|datetimeformat }}</div>
+                <div class="info-value">
+                  {% if job.posted_at %}
+                    {{ job.posted_at|datetimeformat }}
+                  {% else %}
+                    Recently Posted
+                  {% endif %}
+                </div>
             </div>
         </div>
 
