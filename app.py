@@ -96,83 +96,132 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def _safe_int(value, default=0):
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
+def _load_json_list(file_path):
+    if not os.path.exists(file_path):
+        return []
+
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception as e:
+        print(f"❌ JSON load error ({file_path}): {e}")
+        return []
+
+
+def _normalize_applications(raw_data):
+    normalized = []
+
+    if isinstance(raw_data, dict):
+        for app_id, app_data in raw_data.items():
+            if isinstance(app_data, dict):
+                item = dict(app_data)
+                item.setdefault("id", app_id)
+                normalized.append(item)
+        return normalized
+
+    if isinstance(raw_data, list):
+        for app_data in raw_data:
+            if isinstance(app_data, dict):
+                item = dict(app_data)
+                item.setdefault("id", str(uuid.uuid4()))
+                normalized.append(item)
+
+    return normalized
+
+
+def _application_quality_key(application):
+    non_empty_fields = sum(
+        1 for value in application.values()
+        if value not in (None, "", [], {})
+    )
+    return (
+        _safe_int(application.get("updated_at", 0)),
+        _safe_int(application.get("rating_date", 0)),
+        _safe_int(application.get("submitted_at", 0)),
+        non_empty_fields,
+    )
+
+
+def _merge_applications(*sources):
+    merged_by_id = {}
+
+    for source in sources:
+        for app_data in _normalize_applications(source):
+            app_id = app_data.get("id") or str(uuid.uuid4())
+            app_data["id"] = app_id
+
+            existing = merged_by_id.get(app_id)
+            if existing is None or _application_quality_key(app_data) >= _application_quality_key(existing):
+                merged_by_id[app_id] = app_data
+
+    return list(merged_by_id.values())
+
+
+def _save_applications_to_firebase(applications):
+    apps_dict = {}
+    for app_data in _normalize_applications(applications):
+        app_id = app_data.get("id") or str(uuid.uuid4())
+        app_data["id"] = app_id
+        apps_dict[app_id] = app_data
+
+    ref = db.reference('applications')
+    ref.set(apps_dict)
+
+
 def load_applications():
     """Load applications from Firebase Realtime Database with JSON fallback"""
-    # Try Firebase first
+    firebase_applications = []
+    json_applications = _load_json_list(APPLICATIONS_FILE)
+
     if FIREBASE_ENABLED:
         try:
             ref = db.reference('applications')
-            apps_data = ref.get()
-            
-            if apps_data is None:
-                print("⚠️ Firebase is empty - checking local JSON...")
-                # No data in Firebase yet - check local JSON
-                if os.path.exists(APPLICATIONS_FILE):
-                    try:
-                        with open(APPLICATIONS_FILE, 'r') as f:
-                            applications = json.load(f)
-                            print(f"✅ Loaded {len(applications)} applications from local JSON (Firebase empty)")
-                            return applications if isinstance(applications, list) else []
-                    except:
-                        pass
-                return []
-            
-            # Firebase returns dict, convert to list
-            if isinstance(apps_data, dict):
-                # Ensure all applications have proper structure
-                applications = []
-                for app_id, app_data in apps_data.items():
-                    if isinstance(app_data, dict):
-                        # Ensure id field is set
-                        if 'id' not in app_data:
-                            app_data['id'] = app_id
-                        applications.append(app_data)
-                
-                print(f"✅ SUCCESS: Loaded {len(applications)} applications from Firebase")
-                return applications
-            
-            return apps_data if isinstance(apps_data, list) else []
-        
+            firebase_applications = _normalize_applications(ref.get())
+            print(f"✅ Loaded {len(firebase_applications)} applications from Firebase")
         except Exception as e:
-            # If Firebase fails (404 or other error), fall back to JSON
-            print(f"❌ Firebase error: {e} - using local JSON fallback")
-            if os.path.exists(APPLICATIONS_FILE):
-                try:
-                    with open(APPLICATIONS_FILE, 'r') as f:
-                        applications = json.load(f)
-                        print(f"⚠️ Loaded {len(applications)} applications from local JSON (Firebase failed)")
-                        return applications if isinstance(applications, list) else []
-                except Exception as json_err:
-                    print(f"❌ JSON load error: {json_err}")
-            return []
-    
-    # Firebase disabled - use JSON only
-    if os.path.exists(APPLICATIONS_FILE):
+            print(f"❌ Firebase read error: {e}")
+
+    merged_applications = _merge_applications(firebase_applications, json_applications)
+
+    if FIREBASE_ENABLED and len(merged_applications) > len(firebase_applications):
         try:
-            with open(APPLICATIONS_FILE, 'r') as f:
-                applications = json.load(f)
-                print(f"✅ Loaded {len(applications)} applications from local JSON")
-                return applications if isinstance(applications, list) else []
+            # Backfill missing local records to Firebase so restarts stay consistent.
+            _save_applications_to_firebase(merged_applications)
+            print(f"✅ Backfilled {len(merged_applications) - len(firebase_applications)} missing applications to Firebase")
         except Exception as e:
-            print(f"❌ Error loading applications from JSON: {e}")
-    
-    print("⚠️ No applications found")
-    return []
+            print(f"⚠️ Firebase backfill failed: {e}")
+
+    if merged_applications:
+        print(f"✅ Loaded {len(merged_applications)} merged applications")
+    else:
+        print("⚠️ No applications found")
+
+    return merged_applications
 
 
 def save_applications(applications):
     """Save applications to Firebase Realtime Database with JSON fallback"""
+    applications = _merge_applications(applications)
+    now_ts = int(time.time())
+    for app_data in applications:
+        if not app_data.get("updated_at"):
+            app_data["updated_at"] = _safe_int(app_data.get("submitted_at", now_ts), now_ts)
+
     saved_firebase = False
     saved_json = False
     
     # Try Firebase FIRST - this is our primary persistent storage
     if FIREBASE_ENABLED:
         try:
-            # Convert list to dict with app IDs as keys for Firebase
-            apps_dict = {app.get('id', str(uuid.uuid4())): app for app in applications}
-            
-            ref = db.reference('applications')
-            ref.update(apps_dict)
+            _save_applications_to_firebase(applications)
             
             print(f"✅ SUCCESS: Saved {len(applications)} applications to Firebase")
             saved_firebase = True
@@ -192,10 +241,7 @@ def save_applications(applications):
     except Exception as e:
         print(f"❌ Error saving to JSON: {e}")
     
-    # Return success only if Firebase saved successfully (or if we're in dev with Firebase disabled)
-    return saved_firebase or not FIREBASE_ENABLED
-    
-    return saved
+    return saved_firebase or saved_json
 
 
 def format_datetime(value, date_format=None):
