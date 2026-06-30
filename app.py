@@ -119,7 +119,15 @@ def load_applications():
             
             # Firebase returns dict, convert to list
             if isinstance(apps_data, dict):
-                applications = list(apps_data.values())
+                # Ensure all applications have proper structure
+                applications = []
+                for app_id, app_data in apps_data.items():
+                    if isinstance(app_data, dict):
+                        # Ensure id field is set
+                        if 'id' not in app_data:
+                            app_data['id'] = app_id
+                        applications.append(app_data)
+                
                 print(f"✅ SUCCESS: Loaded {len(applications)} applications from Firebase")
                 return applications
             
@@ -190,9 +198,11 @@ def save_applications(applications):
     return saved
 
 
-def format_datetime(value):
+def format_datetime(value, date_format=None):
     try:
-        return time.strftime("%Y-%m-%d %H:%M", time.localtime(int(value)))
+        if date_format is None:
+            date_format = "%Y-%m-%d %H:%M"
+        return time.strftime(date_format, time.localtime(int(value)))
     except Exception:
         return "Unknown"
 
@@ -259,7 +269,15 @@ def load_jobs():
             
             # Firebase returns dict, convert to list
             if isinstance(jobs_data, dict):
-                jobs = list(jobs_data.values())
+                # Ensure all jobs have proper structure
+                jobs = []
+                for job_id, job_data in jobs_data.items():
+                    if isinstance(job_data, dict):
+                        # Ensure id field is set
+                        if 'id' not in job_data:
+                            job_data['id'] = job_id
+                        jobs.append(job_data)
+                
                 print(f"✅ Loaded {len(jobs)} jobs from Firebase")
                 return jobs
             
@@ -1275,11 +1293,12 @@ def apply_to_job(job_id):
                     cv_file.save(save_path)
                     print(f"✅ CV file saved: {save_path}")
                     
-                    # Create application object
+                    # Create application object - ALWAYS save with all fields for consistency
                     application = {
                         "id": str(uuid.uuid4()),
                         "job_id": job_id,
                         "job_title": job.get("title"),
+                        "role": job.get("role", "Healthcare Position"),  # Job role
                         "name": name,
                         "email": email,
                         "phone": phone,
@@ -1287,7 +1306,11 @@ def apply_to_job(job_id):
                         "message": message,
                         "cv": unique_filename,
                         "submitted_at": int(time.time()),
-                        "status": "pending"
+                        "status": "pending",
+                        "verified": False,
+                        "verification_token": "",
+                        "account_email": "",
+                        "messages": []
                     }
                     
                     # Add application ID to job's applications list
@@ -1295,7 +1318,7 @@ def apply_to_job(job_id):
                         job["applications"] = []
                     job["applications"].append(application.get("id"))
                     
-                    # Update job with application reference (wrapped separately - must not block save)
+                    # Update job with application reference
                     try:
                         print(f"📝 Updating job {job_id} with application reference...")
                         update_job(job)
@@ -1303,8 +1326,7 @@ def apply_to_job(job_id):
                     except Exception as job_update_exc:
                         print(f"⚠️ Job update failed (but continuing): {str(job_update_exc)}")
                     
-                    
-                    # Save application
+                    # Save application to Firebase
                     print(f"\n🔴 SAVING APPLICATION:")
                     print(f"   Application ID: {application.get('id')}")
                     print(f"   Name: {name}")
@@ -1312,7 +1334,7 @@ def apply_to_job(job_id):
                     print(f"   Firebase Enabled: {FIREBASE_ENABLED}")
                     
                     applications = load_applications()
-                    print(f"   Current applications: {len(applications)}")
+                    print(f"   Current applications in storage: {len(applications)}")
                     
                     applications.append(application)
                     print(f"   Total after append: {len(applications)}")
@@ -1329,7 +1351,7 @@ def apply_to_job(job_id):
                     print(f"🔴 END SAVING APPLICATION\n")
                     
                     # Set success message BEFORE sending email
-                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted."
+                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted successfully!"
                     
                     # Send confirmation email in background thread (non-blocking)
                     def send_email_async():
