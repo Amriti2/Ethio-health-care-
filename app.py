@@ -8,11 +8,14 @@ import threading
 import base64
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from pathlib import Path
 from werkzeug.utils import secure_filename
 from collections import Counter
+from sqlalchemy import create_engine, text
 
 
 APPLICATIONS_LOCK = threading.Lock()
+JOBS_LOCK = threading.Lock()
 
 
 def _env_flag(name, default=False):
@@ -197,6 +200,203 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(DATA_FOLDER, exist_ok=True)
 
 
+DB_ENGINE = None
+DB_ENABLED = False
+
+
+def _normalize_database_url(raw_url):
+    if not raw_url:
+        return ""
+
+    if raw_url.startswith("postgres://"):
+        return "postgresql+psycopg2://" + raw_url[len("postgres://"):]
+
+    if raw_url.startswith("postgresql://") and "+psycopg2" not in raw_url:
+        return "postgresql+psycopg2://" + raw_url[len("postgresql://"):]
+
+    return raw_url
+
+
+def _default_sqlite_url():
+    db_path = Path(DATA_FOLDER) / "app.db"
+    return f"sqlite:///{db_path.as_posix()}"
+
+
+def _resolve_primary_database_url():
+    env_url = os.environ.get("DATABASE_URL", "").strip()
+    if env_url:
+        return _normalize_database_url(env_url)
+
+    return _default_sqlite_url()
+
+
+def _mask_database_url(db_url):
+    if "@" not in db_url:
+        return db_url
+
+    scheme, remainder = db_url.split("://", 1)
+    creds, host = remainder.split("@", 1)
+    if ":" in creds:
+        username = creds.split(":", 1)[0]
+        return f"{scheme}://{username}:***@{host}"
+    return f"{scheme}://***@{host}"
+
+
+def _init_primary_database():
+    global DB_ENGINE, DB_ENABLED
+
+    db_url = _resolve_primary_database_url()
+    connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+
+    try:
+        DB_ENGINE = create_engine(
+            db_url,
+            future=True,
+            pool_pre_ping=True,
+            connect_args=connect_args,
+        )
+
+        with DB_ENGINE.begin() as connection:
+            connection.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS applications (
+                    id TEXT PRIMARY KEY,
+                    payload TEXT NOT NULL,
+                    updated_at BIGINT NOT NULL
+                )
+                """
+            ))
+            connection.execute(text(
+                """
+                CREATE TABLE IF NOT EXISTS jobs (
+                    id TEXT PRIMARY KEY,
+                    payload TEXT NOT NULL,
+                    updated_at BIGINT NOT NULL
+                )
+                """
+            ))
+
+        DB_ENABLED = True
+        print(f"✅ Primary database initialized ({_mask_database_url(db_url)})")
+    except Exception as exc:
+        DB_ENGINE = None
+        DB_ENABLED = False
+        print(f"⚠️ Primary database unavailable: {exc}")
+
+
+def _record_timestamp(record):
+    return max(
+        _safe_int(record.get("updated_at", 0)),
+        _safe_int(record.get("submitted_at", 0)),
+        _safe_int(record.get("posted_at", 0)),
+        _safe_int(record.get("rating_date", 0)),
+    )
+
+
+def _db_load_records(table_name):
+    if not DB_ENABLED:
+        return []
+
+    with DB_ENGINE.begin() as connection:
+        rows = connection.execute(
+            text(f"SELECT payload FROM {table_name} ORDER BY updated_at DESC")
+        )
+
+        records = []
+        for row in rows:
+            try:
+                payload = json.loads(row.payload)
+            except Exception:
+                continue
+
+            if isinstance(payload, dict):
+                records.append(payload)
+
+        return records
+
+
+def _db_replace_records(table_name, records):
+    if not DB_ENABLED:
+        return False
+
+    rows = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+
+        record_id = record.get("id") or str(uuid.uuid4())
+        record["id"] = record_id
+        rows.append({
+            "id": record_id,
+            "payload": json.dumps(record),
+            "updated_at": _record_timestamp(record),
+        })
+
+    with DB_ENGINE.begin() as connection:
+        connection.execute(text(f"DELETE FROM {table_name}"))
+        if rows:
+            connection.execute(
+                text(
+                    f"INSERT INTO {table_name} (id, payload, updated_at) "
+                    "VALUES (:id, :payload, :updated_at)"
+                ),
+                rows,
+            )
+
+    return True
+
+
+def _normalize_jobs(raw_data):
+    normalized = []
+
+    if isinstance(raw_data, dict):
+        for job_id, job_data in raw_data.items():
+            if isinstance(job_data, dict):
+                item = dict(job_data)
+                item.setdefault("id", job_id)
+                normalized.append(item)
+        return normalized
+
+    if isinstance(raw_data, list):
+        for job_data in raw_data:
+            if isinstance(job_data, dict):
+                item = dict(job_data)
+                item.setdefault("id", str(uuid.uuid4()))
+                normalized.append(item)
+
+    return normalized
+
+
+def _job_quality_key(job):
+    non_empty_fields = sum(
+        1 for value in job.values()
+        if value not in (None, "", [], {})
+    )
+    return (
+        _safe_int(job.get("updated_at", 0)),
+        _safe_int(job.get("posted_at", 0)),
+        non_empty_fields,
+    )
+
+
+def _merge_jobs(*sources):
+    merged_by_id = {}
+
+    for source in sources:
+        for job_data in _normalize_jobs(source):
+            job_id = job_data.get("id") or str(uuid.uuid4())
+            job_data["id"] = job_id
+
+            existing = merged_by_id.get(job_id)
+            if existing is None or _job_quality_key(job_data) >= _job_quality_key(existing):
+                merged_by_id[job_id] = job_data
+
+    return list(merged_by_id.values())
+
+
+_init_primary_database()
+
+
 # --------------------------
 # HELPERS
 # --------------------------
@@ -314,11 +514,19 @@ def _persist_applications_locked(applications):
     applications = _merge_applications(applications)
     now_ts = int(time.time())
     for app_data in applications:
-        if not app_data.get("updated_at"):
-            app_data["updated_at"] = _safe_int(app_data.get("submitted_at", now_ts), now_ts)
+        app_data["updated_at"] = _safe_int(app_data.get("updated_at", app_data.get("submitted_at", now_ts)), now_ts)
 
+    saved_database = False
     saved_firebase = False
     saved_json = False
+
+    if DB_ENABLED:
+        try:
+            _db_replace_records("applications", applications)
+            print(f"✅ Saved {len(applications)} applications to primary database")
+            saved_database = True
+        except Exception as e:
+            print(f"❌ Primary database save failed for applications: {e}")
 
     if FIREBASE_ENABLED:
         try:
@@ -347,7 +555,7 @@ def _persist_applications_locked(applications):
         except Exception as e:
             print(f"⚠️ Secondary JSON save warning: {e}")
 
-    return saved_firebase or saved_json
+    return saved_database or saved_firebase or saved_json
 
 
 def append_application(application):
@@ -357,7 +565,7 @@ def append_application(application):
 
 
 def load_applications():
-    """Load applications from Firebase Realtime Database with JSON fallback"""
+    """Load applications from the primary database with Firebase/JSON migration fallback"""
     firebase_applications = []
     json_applications = _load_json_list_from_candidates(
         APPLICATIONS_FILE,
@@ -371,6 +579,22 @@ def load_applications():
             print(f"✅ Loaded {len(firebase_applications)} applications from Firebase")
         except Exception as e:
             print(f"❌ Firebase read error: {e}")
+
+    db_applications = _db_load_records("applications")
+
+    if DB_ENABLED:
+        merged_applications = _merge_applications(db_applications, firebase_applications, json_applications)
+
+        if merged_applications and merged_applications != db_applications:
+            try:
+                _db_replace_records("applications", merged_applications)
+                print(f"✅ Synced {len(merged_applications)} applications into primary database")
+            except Exception as e:
+                print(f"⚠️ Primary database sync failed for applications: {e}")
+
+        if merged_applications:
+            print(f"✅ Loaded {len(merged_applications)} applications from primary database")
+            return merged_applications
 
     merged_applications = _merge_applications(firebase_applications, json_applications)
 
@@ -473,93 +697,66 @@ sync_local_applications_to_firebase_on_startup()
 # --------------------------
 
 def load_jobs():
-    """Load jobs from Firebase Realtime Database with JSON fallback"""
-    # Try Firebase first
+    """Load jobs from the primary database with Firebase/JSON migration fallback"""
+    firebase_jobs = []
+
     if FIREBASE_ENABLED:
         try:
             ref = db.reference('jobs')
             jobs_data = ref.get()
             
             if jobs_data is None:
-                # No data in Firebase yet - check local JSON
-                if os.path.exists(JOBS_FILE):
-                    try:
-                        with open(JOBS_FILE, 'r') as f:
-                            jobs = json.load(f)
-                            print(f"✅ Loaded {len(jobs)} jobs from local JSON (Firebase empty)")
-                            return jobs if isinstance(jobs, list) else []
-                    except:
-                        pass
-                elif os.path.exists(LOCAL_JOBS_FILE):
-                    try:
-                        with open(LOCAL_JOBS_FILE, 'r') as f:
-                            jobs = json.load(f)
-                            print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON (Firebase empty)")
-                            return jobs if isinstance(jobs, list) else []
-                    except:
-                        pass
-                return []
-            
-            # Firebase returns dict, convert to list
-            if isinstance(jobs_data, dict):
-                # Ensure all jobs have proper structure
-                jobs = []
-                for job_id, job_data in jobs_data.items():
-                    if isinstance(job_data, dict):
-                        # Ensure id field is set
-                        if 'id' not in job_data:
-                            job_data['id'] = job_id
-                        jobs.append(job_data)
-                
-                print(f"✅ Loaded {len(jobs)} jobs from Firebase")
-                return jobs
-            
-            return jobs_data if isinstance(jobs_data, list) else []
+                firebase_jobs = []
+            else:
+                firebase_jobs = _normalize_jobs(jobs_data)
+                print(f"✅ Loaded {len(firebase_jobs)} jobs from Firebase")
         
         except Exception as e:
-            # If Firebase fails (404 or other error), fall back to JSON
             print(f"⚠️ Firebase error: {e} - using local JSON fallback")
-            if os.path.exists(JOBS_FILE):
-                try:
-                    with open(JOBS_FILE, 'r') as f:
-                        jobs = json.load(f)
-                        print(f"✅ Loaded {len(jobs)} jobs from local JSON (Firebase fallback)")
-                        return jobs if isinstance(jobs, list) else []
-                except:
-                    pass
-            elif os.path.exists(LOCAL_JOBS_FILE):
-                try:
-                    with open(LOCAL_JOBS_FILE, 'r') as f:
-                        jobs = json.load(f)
-                        print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON (Firebase fallback)")
-                        return jobs if isinstance(jobs, list) else []
-                except:
-                    pass
-            return []
-    
-    # Firebase disabled - use JSON
-    if os.path.exists(JOBS_FILE):
-        try:
-            with open(JOBS_FILE, 'r') as f:
-                jobs = json.load(f)
-                print(f"✅ Loaded {len(jobs)} jobs from local JSON")
-                return jobs if isinstance(jobs, list) else []
-        except Exception as e:
-            print(f"⚠️ Error loading jobs from JSON: {e}")
-    elif os.path.exists(LOCAL_JOBS_FILE):
-        try:
-            with open(LOCAL_JOBS_FILE, 'r') as f:
-                jobs = json.load(f)
-                print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON")
-                return jobs if isinstance(jobs, list) else []
-        except Exception as e:
-            print(f"⚠️ Error loading jobs from secondary JSON: {e}")
-    return []
+
+    json_jobs = _load_json_list_from_candidates(
+        JOBS_FILE,
+        LOCAL_JOBS_FILE,
+    )
+    db_jobs = _db_load_records("jobs")
+
+    if DB_ENABLED:
+        merged_jobs = _merge_jobs(db_jobs, firebase_jobs, json_jobs)
+
+        if merged_jobs and merged_jobs != db_jobs:
+            try:
+                _db_replace_records("jobs", merged_jobs)
+                print(f"✅ Synced {len(merged_jobs)} jobs into primary database")
+            except Exception as e:
+                print(f"⚠️ Primary database sync failed for jobs: {e}")
+
+        if merged_jobs:
+            print(f"✅ Loaded {len(merged_jobs)} jobs from primary database")
+            return merged_jobs
+
+    if json_jobs:
+        print(f"✅ Loaded {len(json_jobs)} jobs from JSON fallback")
+    else:
+        print("⚠️ No jobs found")
+    return json_jobs
 
 
 def save_jobs(jobs):
     """Save jobs to Firebase Realtime Database with JSON fallback"""
+    jobs = _merge_jobs(jobs)
+    now_ts = int(time.time())
+    for job in jobs:
+        job["updated_at"] = _safe_int(job.get("updated_at", job.get("posted_at", now_ts)), now_ts)
+
     saved = False
+
+    if DB_ENABLED:
+        try:
+            _db_replace_records("jobs", jobs)
+            print(f"✅ Saved {len(jobs)} jobs to primary database")
+            saved = True
+        except Exception as e:
+            print(f"❌ Primary database save failed for jobs: {e}")
     
     # Try Firebase first if enabled
     if FIREBASE_ENABLED:
