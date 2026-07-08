@@ -1663,7 +1663,7 @@ def google_verification():
 @app.route("/sitemap.xml")
 def sitemap():
     """Generate sitemap.xml for search engines"""
-    base_url = "https://ethio-health-care.onrender.com"
+    base_url = os.environ.get("BASE_URL", "https://ethio-health-care-1.onrender.com")
     
     # In development, use localhost
     if os.environ.get("FLASK_ENV") != "production":
