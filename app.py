@@ -5,45 +5,122 @@ import json
 import uuid
 import smtplib
 import threading
+import base64
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from werkzeug.utils import secure_filename
 from collections import Counter
 
-# Firebase initialization (REQUIRED - Cloud storage for jobs and applications)
-try:
-    import firebase_admin
-    from firebase_admin import credentials, db, storage
-    FIREBASE_ENABLED = False
-    
-    # Initialize Firebase with credentials
-    if not firebase_admin._apps:
-        # Try to load from firebase-key.json (development)
-        firebase_key_path = os.path.join(os.path.dirname(__file__), "firebase-key.json")
-        if os.path.exists(firebase_key_path):
-            cred = credentials.Certificate(firebase_key_path)
-            firebase_admin.initialize_app(cred, {
-                'databaseURL': 'https://ethiohealthcare-6ad15-default-rtdb.firebaseio.com'
-            })
-            FIREBASE_ENABLED = True
-            print("✅ Firebase initialized from firebase-key.json")
-        # Try from environment variable (production on Render)
-        elif os.environ.get("FIREBASE_CREDENTIALS"):
-            try:
-                cred_dict = json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
-                cred = credentials.Certificate(cred_dict)
+
+APPLICATIONS_LOCK = threading.Lock()
+
+
+def _env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _load_firebase_credentials_from_env():
+    """Parse Firebase credentials from env, supporting JSON and base64 JSON."""
+    raw_creds = os.environ.get("FIREBASE_CREDENTIALS", "").strip()
+    if not raw_creds:
+        return None
+
+    parse_attempts = [raw_creds]
+
+    # Some platforms store JSON with escaped newlines inside private_key.
+    parse_attempts.append(raw_creds.replace("\\n", "\n"))
+
+    # Support base64-encoded JSON in FIREBASE_CREDENTIALS.
+    try:
+        decoded = base64.b64decode(raw_creds).decode("utf-8")
+        parse_attempts.append(decoded)
+        parse_attempts.append(decoded.replace("\\n", "\n"))
+    except Exception:
+        pass
+
+    for candidate in parse_attempts:
+        try:
+            data = json.loads(candidate)
+            if isinstance(data, dict) and data.get("type") == "service_account":
+                if "private_key" in data and isinstance(data["private_key"], str):
+                    data["private_key"] = data["private_key"].replace("\\n", "\n")
+                return data
+        except Exception:
+            continue
+
+    return None
+
+
+def _derive_database_url_from_project_id(project_id):
+    if not project_id:
+        return ""
+    return f"https://{project_id}-default-rtdb.firebaseio.com"
+
+
+def _resolve_database_url(cred_dict=None):
+    env_url = os.environ.get("FIREBASE_DATABASE_URL", "").strip()
+    if env_url:
+        return env_url
+
+    if isinstance(cred_dict, dict):
+        derived = _derive_database_url_from_project_id(cred_dict.get("project_id"))
+        if derived:
+            return derived
+
+    return "https://ethiohealthcare-6ad15-default-rtdb.firebaseio.com"
+
+# Firebase initialization (optional; disabled on Render until RTDB is configured correctly)
+FIREBASE_ENABLED = False
+FIREBASE_DISABLED = _env_flag("DISABLE_FIREBASE", False)
+
+if FIREBASE_DISABLED:
+    print("⚠️ Firebase explicitly disabled by DISABLE_FIREBASE; using persistent disk storage only.")
+else:
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, db, storage
+
+        if not firebase_admin._apps:
+            # Try to load from firebase-key.json (development)
+            firebase_key_path = os.path.join(os.path.dirname(__file__), "firebase-key.json")
+            if os.path.exists(firebase_key_path):
+                cred_dict = None
+                try:
+                    with open(firebase_key_path, "r") as key_file:
+                        cred_dict = json.load(key_file)
+                except Exception:
+                    cred_dict = None
+
+                cred = credentials.Certificate(firebase_key_path)
+                db_url = _resolve_database_url(cred_dict)
                 firebase_admin.initialize_app(cred, {
-                    'databaseURL': os.environ.get("FIREBASE_DATABASE_URL", "https://ethiohealthcare-6ad15-default-rtdb.firebaseio.com")
+                    'databaseURL': db_url
                 })
                 FIREBASE_ENABLED = True
-                print("✅ Firebase initialized from environment credentials")
-            except Exception as e:
-                print(f"❌ Firebase env credentials error: {e}")
-        else:
-            print("⚠️ Firebase credentials not found. Set FIREBASE_CREDENTIALS environment variable on Render.")
-except (ImportError, Exception) as e:
-    print(f"⚠️ Firebase not available: {e}")
-    FIREBASE_ENABLED = False
+                print(f"✅ Firebase initialized from firebase-key.json ({db_url})")
+            # Try from environment variable (production on Render)
+            elif os.environ.get("FIREBASE_CREDENTIALS"):
+                try:
+                    cred_dict = _load_firebase_credentials_from_env()
+                    if not cred_dict:
+                        raise ValueError("FIREBASE_CREDENTIALS is not valid JSON service-account credentials")
+                    cred = credentials.Certificate(cred_dict)
+                    db_url = _resolve_database_url(cred_dict)
+                    firebase_admin.initialize_app(cred, {
+                        'databaseURL': db_url
+                    })
+                    FIREBASE_ENABLED = True
+                    print(f"✅ Firebase initialized from environment credentials ({db_url})")
+                except Exception as e:
+                    print(f"❌ Firebase env credentials error: {e}")
+            else:
+                print("⚠️ Firebase credentials not found. Set FIREBASE_CREDENTIALS environment variable on Render.")
+    except (ImportError, Exception) as e:
+        print(f"⚠️ Firebase not available: {e}")
+        FIREBASE_ENABLED = False
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
@@ -60,11 +137,43 @@ ROLE_MAP = {
     "other": "Other"
 }
 
-DATA_DIR = os.environ.get("DATA_DIR", os.path.dirname(__file__))
+
+def _resolve_data_dir():
+    def is_writable_directory(path):
+        if not path:
+            return False
+
+        try:
+            os.makedirs(path, exist_ok=True)
+            probe_path = os.path.join(path, ".write_test")
+            with open(probe_path, "w") as probe_file:
+                probe_file.write("ok")
+            os.remove(probe_path)
+            return True
+        except Exception:
+            return False
+
+    env_data_dir = os.environ.get("DATA_DIR", "").strip()
+    render_disk_root = "/var/data"
+    project_dir = os.path.dirname(__file__)
+
+    for candidate in (env_data_dir, render_disk_root, project_dir):
+        if is_writable_directory(candidate):
+            return candidate
+
+    return project_dir
+
+
+DATA_DIR = _resolve_data_dir()
 UPLOAD_FOLDER = os.path.join(DATA_DIR, "uploads")
 DATA_FOLDER = os.path.join(DATA_DIR, "data")
 APPLICATIONS_FILE = os.path.join(DATA_FOLDER, "applications.json")
 JOBS_FILE = os.path.join(DATA_FOLDER, "jobs.json")
+
+# Secondary local fallback to recover records if DATA_DIR config changes.
+LOCAL_DATA_FOLDER = os.path.join(os.path.dirname(__file__), "data")
+LOCAL_APPLICATIONS_FILE = os.path.join(LOCAL_DATA_FOLDER, "applications.json")
+LOCAL_JOBS_FILE = os.path.join(LOCAL_DATA_FOLDER, "jobs.json")
 
 ALLOWED_EXTENSIONS = {"pdf"}
 ALLOWED_LOGO_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -114,6 +223,20 @@ def _load_json_list(file_path):
     except Exception as e:
         print(f"❌ JSON load error ({file_path}): {e}")
         return []
+
+
+def _load_json_list_from_candidates(*file_paths):
+    merged = []
+    seen = set()
+    for file_path in file_paths:
+        if not file_path:
+            continue
+        normalized = os.path.normpath(file_path)
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        merged.extend(_load_json_list(file_path))
+    return merged
 
 
 def _normalize_applications(raw_data):
@@ -176,10 +299,70 @@ def _save_applications_to_firebase(applications):
     ref.set(apps_dict)
 
 
+def _write_json_list_atomic(file_path, items):
+    directory = os.path.dirname(file_path)
+    os.makedirs(directory, exist_ok=True)
+    temp_path = f"{file_path}.tmp"
+
+    with open(temp_path, 'w') as f:
+        json.dump(items, f, indent=2)
+
+    os.replace(temp_path, file_path)
+
+
+def _persist_applications_locked(applications):
+    applications = _merge_applications(applications)
+    now_ts = int(time.time())
+    for app_data in applications:
+        if not app_data.get("updated_at"):
+            app_data["updated_at"] = _safe_int(app_data.get("submitted_at", now_ts), now_ts)
+
+    saved_firebase = False
+    saved_json = False
+
+    if FIREBASE_ENABLED:
+        try:
+            _save_applications_to_firebase(applications)
+            print(f"✅ SUCCESS: Saved {len(applications)} applications to Firebase")
+            saved_firebase = True
+        except Exception as e:
+            print(f"❌ CRITICAL: Firebase save failed: {e}")
+    else:
+        print(f"⚠️ WARNING: Firebase is disabled - applications may not persist on Render!")
+
+    try:
+        _write_json_list_atomic(APPLICATIONS_FILE, applications)
+        print(f"✅ Saved {len(applications)} applications to local JSON backup")
+        saved_json = True
+    except Exception as e:
+        print(f"❌ Error saving to JSON: {e}")
+
+    secondary_path = os.path.normpath(LOCAL_APPLICATIONS_FILE)
+    primary_path = os.path.normpath(APPLICATIONS_FILE)
+    if secondary_path != primary_path:
+        try:
+            _write_json_list_atomic(LOCAL_APPLICATIONS_FILE, applications)
+            print(f"✅ Saved {len(applications)} applications to secondary JSON backup")
+            saved_json = True
+        except Exception as e:
+            print(f"⚠️ Secondary JSON save warning: {e}")
+
+    return saved_firebase or saved_json
+
+
+def append_application(application):
+    with APPLICATIONS_LOCK:
+        current_applications = load_applications()
+        return _persist_applications_locked(current_applications + [application])
+
+
 def load_applications():
     """Load applications from Firebase Realtime Database with JSON fallback"""
     firebase_applications = []
-    json_applications = _load_json_list(APPLICATIONS_FILE)
+    json_applications = _load_json_list_from_candidates(
+        APPLICATIONS_FILE,
+        LOCAL_APPLICATIONS_FILE,
+    )
 
     if FIREBASE_ENABLED:
         try:
@@ -209,39 +392,8 @@ def load_applications():
 
 def save_applications(applications):
     """Save applications to Firebase Realtime Database with JSON fallback"""
-    applications = _merge_applications(applications)
-    now_ts = int(time.time())
-    for app_data in applications:
-        if not app_data.get("updated_at"):
-            app_data["updated_at"] = _safe_int(app_data.get("submitted_at", now_ts), now_ts)
-
-    saved_firebase = False
-    saved_json = False
-    
-    # Try Firebase FIRST - this is our primary persistent storage
-    if FIREBASE_ENABLED:
-        try:
-            _save_applications_to_firebase(applications)
-            
-            print(f"✅ SUCCESS: Saved {len(applications)} applications to Firebase")
-            saved_firebase = True
-        
-        except Exception as e:
-            print(f"❌ CRITICAL: Firebase save failed: {e}")
-    else:
-        print(f"⚠️ WARNING: Firebase is disabled - applications may not persist on Render!")
-    
-    # Always also save to JSON as local backup (temporary storage)
-    try:
-        os.makedirs(DATA_FOLDER, exist_ok=True)
-        with open(APPLICATIONS_FILE, 'w') as f:
-            json.dump(applications, f, indent=2)
-        print(f"✅ Saved {len(applications)} applications to local JSON backup")
-        saved_json = True
-    except Exception as e:
-        print(f"❌ Error saving to JSON: {e}")
-    
-    return saved_firebase or saved_json
+    with APPLICATIONS_LOCK:
+        return _persist_applications_locked(applications)
 
 
 def format_datetime(value, date_format=None):
@@ -269,24 +421,51 @@ def find_application(app_id):
 
 
 def update_application(updated_application):
-    applications = load_applications()
+    with APPLICATIONS_LOCK:
+        applications = load_applications()
 
-    for index, item in enumerate(applications):
-        if item.get("id") == updated_application.get("id"):
-            applications[index] = updated_application
-            save_applications(applications)
-            return
+        for index, item in enumerate(applications):
+            if item.get("id") == updated_application.get("id"):
+                applications[index] = updated_application
+                _persist_applications_locked(applications)
+                return
 
 
 def delete_application(app_id):
-    applications = load_applications()
+    with APPLICATIONS_LOCK:
+        applications = load_applications()
 
-    applications = [
-        app for app in applications
-        if app.get("id") != app_id
-    ]
+        applications = [
+            app for app in applications
+            if app.get("id") != app_id
+        ]
 
-    save_applications(applications)
+        _persist_applications_locked(applications)
+
+
+_startup_application_sync_attempted = False
+
+
+def sync_local_applications_to_firebase_on_startup():
+    """Backfill local JSON applicants into Firebase once during app startup."""
+    global _startup_application_sync_attempted
+
+    if _startup_application_sync_attempted:
+        return
+
+    _startup_application_sync_attempted = True
+
+    if not FIREBASE_ENABLED:
+        return
+
+    try:
+        merged_applications = load_applications()
+        print(f"✅ Startup applicant sync complete: {len(merged_applications)} merged records available")
+    except Exception as e:
+        print(f"⚠️ Startup applicant sync failed: {e}")
+
+
+sync_local_applications_to_firebase_on_startup()
 
 
 # --------------------------
@@ -308,6 +487,14 @@ def load_jobs():
                         with open(JOBS_FILE, 'r') as f:
                             jobs = json.load(f)
                             print(f"✅ Loaded {len(jobs)} jobs from local JSON (Firebase empty)")
+                            return jobs if isinstance(jobs, list) else []
+                    except:
+                        pass
+                elif os.path.exists(LOCAL_JOBS_FILE):
+                    try:
+                        with open(LOCAL_JOBS_FILE, 'r') as f:
+                            jobs = json.load(f)
+                            print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON (Firebase empty)")
                             return jobs if isinstance(jobs, list) else []
                     except:
                         pass
@@ -340,6 +527,14 @@ def load_jobs():
                         return jobs if isinstance(jobs, list) else []
                 except:
                     pass
+            elif os.path.exists(LOCAL_JOBS_FILE):
+                try:
+                    with open(LOCAL_JOBS_FILE, 'r') as f:
+                        jobs = json.load(f)
+                        print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON (Firebase fallback)")
+                        return jobs if isinstance(jobs, list) else []
+                except:
+                    pass
             return []
     
     # Firebase disabled - use JSON
@@ -351,6 +546,14 @@ def load_jobs():
                 return jobs if isinstance(jobs, list) else []
         except Exception as e:
             print(f"⚠️ Error loading jobs from JSON: {e}")
+    elif os.path.exists(LOCAL_JOBS_FILE):
+        try:
+            with open(LOCAL_JOBS_FILE, 'r') as f:
+                jobs = json.load(f)
+                print(f"✅ Loaded {len(jobs)} jobs from secondary local JSON")
+                return jobs if isinstance(jobs, list) else []
+        except Exception as e:
+            print(f"⚠️ Error loading jobs from secondary JSON: {e}")
     return []
 
 
@@ -382,6 +585,18 @@ def save_jobs(jobs):
         saved = True
     except Exception as e:
         print(f"❌ Error saving to JSON: {e}")
+
+    secondary_path = os.path.normpath(LOCAL_JOBS_FILE)
+    primary_path = os.path.normpath(JOBS_FILE)
+    if secondary_path != primary_path:
+        try:
+            os.makedirs(LOCAL_DATA_FOLDER, exist_ok=True)
+            with open(LOCAL_JOBS_FILE, 'w') as f:
+                json.dump(jobs, f, indent=2)
+            print(f"✅ Saved {len(jobs)} jobs to secondary local JSON")
+            saved = True
+        except Exception as e:
+            print(f"⚠️ Secondary jobs JSON save warning: {e}")
     
     return saved
 
@@ -665,13 +880,12 @@ def apply_form():
                         "messages": []
                     }
 
-                    applications = load_applications()
+                    save_result = append_application(application)
 
-                    applications.append(application)
-
-                    save_applications(applications)
-
-                    success = f"Thank you {name}! Your application has been submitted."
+                    if save_result:
+                        success = f"Thank you {name}! Your application has been submitted."
+                    else:
+                        error = "Could not save your application. Please try again."
 
     return render_template(
         "apply.html",
@@ -1381,30 +1595,26 @@ def apply_to_job(job_id):
                     
                     applications = load_applications()
                     print(f"   Current applications in storage: {len(applications)}")
+                    print(f"   Total after append: {len(applications) + 1}")
                     
-                    applications.append(application)
-                    print(f"   Total after append: {len(applications)}")
-                    
-                    save_result = save_applications(applications)
+                    save_result = append_application(application)
                     print(f"   Save result: {save_result}")
                     
                     if not save_result:
                         print(f"❌ CRITICAL: Applications save failed!")
                         if not FIREBASE_ENABLED:
                             print(f"⚠️ Firebase is disabled - check Render environment variables!")
+                        error = "Could not save your application. Please try again."
                     else:
                         print(f"✅ Application successfully saved to persistent storage")
-                    print(f"🔴 END SAVING APPLICATION\n")
-                    
-                    # Set success message BEFORE sending email
-                    success = f"Thank you {name}! Your application for {job.get('title')} has been submitted successfully!"
-                    
-                    # Send confirmation email in background thread (non-blocking)
-                    def send_email_async():
-                        try:
-                            print(f"📧 Sending confirmation email to {email}...")
-                            subject = f"Application Received - {job.get('title')}"
-                            body = f"""
+                        success = f"Thank you {name}! Your application for {job.get('title')} has been submitted successfully!"
+
+                        # Send confirmation email in background thread (non-blocking)
+                        def send_email_async():
+                            try:
+                                print(f"📧 Sending confirmation email to {email}...")
+                                subject = f"Application Received - {job.get('title')}"
+                                body = f"""
 Hello {name},
 
 Thank you for applying to the {job.get('title')} position at Ethio Health Care!
@@ -1414,14 +1624,15 @@ We have received your application and will review it shortly. You will hear from
 Best regards,
 Ethio Health Care
 """
-                            send_email(email, subject, body)
-                            print(f"✅ Confirmation email sent")
-                        except Exception as email_exc:
-                            print(f"⚠️ Email failed (but application was saved): {str(email_exc)}")
-                    
-                    # Start email sending in background thread so it doesn't block response
-                    email_thread = threading.Thread(target=send_email_async, daemon=True)
-                    email_thread.start()
+                                send_email(email, subject, body)
+                                print(f"✅ Confirmation email sent")
+                            except Exception as email_exc:
+                                print(f"⚠️ Email failed (but application was saved): {str(email_exc)}")
+
+                        # Start email sending in background thread so it doesn't block response
+                        email_thread = threading.Thread(target=send_email_async, daemon=True)
+                        email_thread.start()
+                    print(f"🔴 END SAVING APPLICATION\n")
                     
                     
                     
